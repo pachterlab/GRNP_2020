@@ -1,5 +1,6 @@
 #library(stringr)
 
+library(dplyr)
 
 #convert gene indices to gene symbols
 library(qdapTools)
