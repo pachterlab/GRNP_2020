@@ -1,9 +1,12 @@
-#library(stringr)
+sourcePath = "GRNP_2020/NotebookAdaptedRCode/"
+source(paste0(sourcePath, "paths.R"))
 
+
+#library(stringr)
 library(dplyr)
+library(qdapTools)
 
 #convert gene indices to gene symbols
-library(qdapTools)
 geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
   genenames = read.table(genesFile, stringsAsFactors = F)$V1
   tr2g = read.table(Tr2gFile, stringsAsFactors = F)

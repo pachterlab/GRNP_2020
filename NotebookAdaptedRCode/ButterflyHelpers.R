@@ -10,10 +10,7 @@ library(DescTools)
 
 
 sourcePath = "GRNP_2020/NotebookAdaptedRCode/"
-dataPath = "data/"
-figure_data_path = "figureData/"
-figure_path = "figures/"
-source(paste0(sourcePath,"modZTNB.R"))
+source(paste0(sourcePath, "paths.R"))
 
 
 namedSave <- function(objlist, objNames, file) {
@@ -174,17 +171,6 @@ downSampleManyTimesAndGetHist <- function(bug, fractionToKeep, numTimes=10) {
 }
 
 
-
-
-library(extraDistr)
-
-
-getCCC = function(x, y) {
-  CCC(x,y)$rho.c$est
-}
-
-
-
 totalCPUHistogram <- function(bug) {
   return (hist(bug$count, breaks=seq(0.5, max(bug$count)+0.5, by=1), plot = F))
 }
@@ -199,54 +185,6 @@ goodToulmin <- function(histo, t) {
   res = res + sum(histo$counts)
   return (res)
 }
-
-#t is a multiplier of the counts, i.e. 2 means multiplying to the double
-predPreSeqDS <- function(histo, t, mt) {
-  freq = histo$mids
-  counts = histo$counts
-  #if only ones, add one extra umi with two copies, the algorithm cannot handle it otherwise
-  if (length(counts) == 1 & freq[1] == 1) {
-    counts = c(counts,1)
-    freq = c(1,2)
-  }
-
-  dd = as.matrix(data.frame(freq,counts));
-  rSAC = ds.rSAC(dd, mt=mt)
-  return (rSAC(t))
-}
-
-#This has been modified to use the right function that is reasonably fast
-#t is a multiplier of the counts, i.e. 2 means predicting at the double number of counts
-predPreSeqZTNB <- function(histo, t, incTol = 1e-5, iterIncTol = 200) {
-  freq = histo$mids
-  counts = histo$counts
-  #if only ones, add one extra umi with two copies, the algorithm cannot handle it otherwise
-  if (length(counts) == 1 & freq[1] == 1) {
-    counts = c(counts,1)
-    freq = c(1,2)
-  }
-  dd = as.matrix(data.frame(freq,counts));
-  rSAC = mod.ztnb.rSAC(dd, incTol = incTol, iterIncTol = iterIncTol)
-  return (rSAC(t))
-}
-
-
-#t is a multiplier of the counts, i.e. 2 means predicting at the double number of counts
-#this is the "best practice" function
-predPreSeq <- function(histo, t, mt) {
-  #h = hist(bugFile$V3, breaks=seq(min(bugFile$V3)-0.5, max(bugFile$V3)+0.5, by=1), xlim=c(0,30), xlab="Copies per UMI", plot = F)
-  freq = histo$mids
-  counts = histo$counts
-  #if only ones, add one extra umi with two copies, the algorithm cannot handle it otherwise
-  if (length(counts) == 1 & freq[1] == 1) {
-    counts = c(counts,1)
-    freq = c(1,2)
-  }
-  dd = as.matrix(data.frame(freq,counts));
-  rSAC = mod.preseqR.rSAC.fixed(dd, mt=mt)#preseqR.rSAC(dd, mt=mt)
-  return (rSAC(t))
-}
-
 
 
 
