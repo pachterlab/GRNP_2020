@@ -5,8 +5,7 @@ library(Matrix)
 
 library(dplyr)
 library(textTinyR)
-#install.packages("DescTools")
-library(DescTools)
+
 
 
 sourcePath = "GRNP_2020/NotebookAdaptedRCode/"

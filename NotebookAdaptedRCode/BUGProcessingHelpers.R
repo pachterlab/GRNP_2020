@@ -1,5 +1,6 @@
 sourcePath = "GRNP_2020/NotebookAdaptedRCode/"
 source(paste0(sourcePath, "paths.R"))
+source(paste0(sourcePath, "ButterflyHelpers.R"))
 
 
 #library(stringr)
