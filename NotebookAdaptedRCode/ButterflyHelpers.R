@@ -1,10 +1,10 @@
-library(magrittr)
+#library(magrittr)
 #library(data.table)
 #library(DropletUtils)
 library(Matrix)
 
 library(dplyr)
-library(textTinyR)
+#library(textTinyR)
 
 
 
