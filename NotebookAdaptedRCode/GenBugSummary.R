@@ -1,12 +1,6 @@
-sourcePath = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/"
+sourcePath = "GRNP_2020/NotebookAdaptedRCode/"
 
 source(paste0(sourcePath,"ButterflyHelpers.R"))
-
-localDataPath = "C:/Work/R/ButterflyQuant/"
-cachedDataPath = paste0(localDataPath,"savedData/")
-dataPath = "E:/Butterfly/"
-figure_path = "Z:/projects/Butterfly/figures/"
-figure_data_path = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/FigureData/"
 
 
 #highSingleCopyUMIGene can be Vmn1r13 for mouse
