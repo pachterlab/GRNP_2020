@@ -3,6 +3,43 @@ sourcePath = "GRNP_2020/NotebookAdaptedRCode/"
 source(paste0(sourcePath,"ButterflyHelpers.R"))
 
 
+#used for investigating single-copy molecules
+ClosestDists <- function(bug, subBug, UMILength) {
+  #make sure subbug is max 2000 UMIs to shorten the execution time:
+  if (dim(subBug)[1] > 2000) {
+    print("Down-sampling to 2000 UMIs")
+    samp = sort(sample(1:(dim(subBug)[1]), 2000))
+    subBug = subBug[samp,]
+  }
+
+  currCell = ""
+  dists = rep(0,UMILength)
+  print(paste0("Will process ", dim(subBug)[1], " UMIs"))
+  for (i in 1:(dim(subBug)[1])) {
+    if (i%%100 == 0) {
+      print(i)
+    }
+    if (subBug$barcode[i] != currCell) {
+      currCell = subBug$barcode[i];
+      currCellBug = bug[bug$barcode==currCell,]
+    }
+    currUMI = subBug$UMI[[i]]
+    bestDist = UMILength;
+    for (j in 1:(dim(currCellBug)[1])) {
+      dist = stringdist::stringdist(currCellBug$UMI[[j]], currUMI, method = "hamming")
+      if (dist > 0 & dist < bestDist) {
+        bestDist = dist;
+        if (bestDist == 1){
+          break
+        }
+      }
+    }
+    dists[bestDist] = dists[bestDist] + 1;
+  }
+  return (dists)
+}
+
+
 #highSingleCopyUMIGene can be Vmn1r13 for mouse
 #lowSingleCopyUMIGene can be Ubb for mouse
 genBugSummary <- function(dsid, lowSingleCopyUMIGene, highSingleCopyUMIGene, UMILen, fig_data_path = figure_data_path) {
