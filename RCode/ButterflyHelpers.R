@@ -1,4 +1,3 @@
-library(Seurat)
 library(preseqR)
 library(BUSpaRse)
 library(TENxBUSData)
@@ -14,11 +13,8 @@ library(textTinyR)
 #install.packages("DescTools")
 library(DescTools)
 
-#library(Rcpp)
 
 sourcePath = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/"
-localDataPath = "C:/Work/R/ButterflyQuant/"
-cachedDataPath = paste0(localDataPath,"savedData/")
 dataPath = "E:/Butterfly/"
 figure_data_path = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/FigureData/"
 figure_path = "Z:/projects/Butterfly/figures/"
