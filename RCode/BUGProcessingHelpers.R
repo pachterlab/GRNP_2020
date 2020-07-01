@@ -77,6 +77,7 @@ createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, 
   UMIsPerCell = bug %>% group_by(barcode) %>% tally()
   sum(UMIsPerCell$n > UmisPerCellLimit)
   filtBug = bug[bug$barcode %in% UMIsPerCell$barcode[UMIsPerCell$n > UmisPerCellLimit],]
+  rm(bug)
   
   #skip mitochondrial content for now; don't think it matters for this application
   #should have mitochondrial content of less than 10%
@@ -129,6 +130,8 @@ createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, 
     )
     colnames(tmp) = cn
     statsList[[i]] = tmp
+	
+	rm(dsBug)
     
   }
   print("Done")
