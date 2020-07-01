@@ -10,7 +10,7 @@ library(magrittr)
 library(Matrix)
 
 library(dplyr)
-library(textTinyR)
+#library(textTinyR)
 
 #library(Rcpp)
 
