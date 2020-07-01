@@ -6,12 +6,6 @@
 
 source(paste0(sourcePath,"ButterflyHelpers.R"))
 
-localDataPath = "C:/Work/R/ButterflyQuant/"
-cachedDataPath = paste0(localDataPath,"savedData/")
-dataPath = "E:/Butterfly/"
-figure_path = "Z:/projects/Butterfly/figures/"
-figure_data_path = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/FigureData/"
-
 #used for investigating single-copy molecules
 ClosestDists <- function(bug, subBug, UMILength) {
   #make sure subbug is max 2000 UMIs to shorten the execution time:
