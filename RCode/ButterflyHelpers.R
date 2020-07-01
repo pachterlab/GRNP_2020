@@ -5,14 +5,12 @@
 #source("GRNP_2020/RCode/pathsGoogleColab.R")
 
 library(magrittr)
-library(data.table)
-library(DropletUtils)
+#library(data.table)
+#library(DropletUtils)
 library(Matrix)
 
 library(dplyr)
 library(textTinyR)
-#install.packages("DescTools")
-library(DescTools)
 
 #library(Rcpp)
 
