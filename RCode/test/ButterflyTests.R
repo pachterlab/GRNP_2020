@@ -1,5 +1,11 @@
-sourcePath = "C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/"
+#before anything else, you need to setup paths:
+#for example
+#source("C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/paths.R"))
+#or, in colab:
+#source("GRNP_2020/RCode/pathsGoogleColab.R")
+
 source(paste0(sourcePath,"ButterflyHelpers.R"))
+source(paste0(sourcePath,"preseqHelpers.R"))
 
 test_fig_data_path = paste0(sourcePath, "test/tmp/")
 
@@ -7,9 +13,9 @@ test_fig_data_path = paste0(sourcePath, "test/tmp/")
 ##############################################
 bugTest = read.table(paste0(sourcePath, "test/TestClosestDists.txt"), header = T, stringsAsFactors = F)
 
-ClosestDists(bugTest, bugTest[bugTest$gene=="g1",], 10)#ok
-ClosestDists(bugTest, bugTest[bugTest$gene=="g2",], 10)#ok
-ClosestDists(bugTest, bugTest[bugTest$gene=="g3",], 10)#ok
+all(ClosestDists(bugTest, bugTest[bugTest$gene=="g1",], 10) == c(2,0,1,3,0,0,0,0,0,0)) #ok
+all(ClosestDists(bugTest, bugTest[bugTest$gene=="g2",], 10) == c(1,0,0,0,1,0,0,0,0,0)) #ok
+all(ClosestDists(bugTest, bugTest[bugTest$gene=="g3",], 10) == c(0,0,0,0,1,2,0,0,0,0)) #ok
 
 #Expected results:
 #g1: 2 0 1 3
@@ -21,7 +27,7 @@ ClosestDists(bugTest, bugTest[bugTest$gene=="g3",], 10)#ok
 #####################################
 #31 == ENSMUSG00000076800.1 == Trav6n-5
 res = geneIndices2Symbols(31, paste0(sourcePath, "test/smallBug/bus_output/coll.genes.txt"), paste0(sourcePath, "test/smallBug/bus_output/transcripts_to_genes.txt"))
-res #should be Trav6n-5, ok
+res == "Trav6n-5" # ok
 
 #TCR0003 - createStandardBugsData
 #test 1 simple bug only
@@ -32,16 +38,18 @@ res #should be Trav6n-5, ok
 #create the files for the dataset in the tmp folder
 createStandardBugsData(paste0(sourcePath, "test/smallBug/"), "smallBug", c(0.5,1), UmisPerCellLimit = 1, fig_data_path = test_fig_data_path)
 
-#check single bug file briefly
-loadBug("smallBug", fig_data_path = test_fig_data_path)
-dim(bugsmallBug) == c(6,4) #the size of the bug, ok
-bugsmallBug[[4,3]] == "Trbd2" #check of one value, ok
+#check full bug file briefly
+loadBug("smallBug", 1, fig_data_path = test_fig_data_path)
+smallBug = getBug("smallBug",1)
+all(dim(smallBug) == c(6,4)) #the size of the bug, ok
+smallBug[[4,3]] == "Trbd2" #check of one value, ok
+rmBug("smallBug", 1)
 
-#check multiple bugs file briefly
-loadBugs("smallBug", fig_data_path = test_fig_data_path)
-length(dsBugssmallBug) == 2
-dsBug = dsBugssmallBug[[1]]
-sum(dsBug[,4]) == 15 #downsampling, OK
+#check downsampled bug file briefly
+loadBug("smallBug", 0.5, fig_data_path = test_fig_data_path)
+smallBug50 = getBug("smallBug",0.5)
+sum(smallBug50[,4]) == 15 #downsampling, OK
+rmBug("smallBug", 0.5)
 
 #check that the stats are ok
 loadStats("smallBug", fig_data_path = test_fig_data_path)
@@ -71,21 +79,25 @@ goodToulmin(h,2) == 8 #3-2+1-1 + existing number, ok
 #####################################
 
 #just check that we get the right total number of counts
-loadBug("smallBug", fig_data_path = paste0(sourcePath, "test/tmp/"))
-histMany = downSampleManyTimesAndGetHist(bugsmallBug, 0.5, numTimes=20)
+loadBug("smallBug", 1, fig_data_path = paste0(sourcePath, "test/tmp/"))
+smallBug = getBug("smallBug",1)
+histMany = downSampleManyTimesAndGetHist(smallBug, 0.5, numTimes=20)
 histAllGenes = colSums(histMany)
 totCounts = sum(histAllGenes * 1:100)
 totCounts == 30*20*0.5 #The dataset has 30 counts, downsampled to 0.5, repeated 20 times. Ok
+rmBug("smallBug", 1)
 
 
 #TCR0007 - getDsHist
 #####################################
 
 #just check that we get the right total number of counts
-loadBug("smallBug", fig_data_path = paste0(sourcePath, "test/tmp/"))
-h = getDsHist(bugsmallBug)
-h[1,1:10] == c(1,0,0,2,0,0,0,0,1,0) #ok
-h[2,1:10] == c(0,0,0,0,0,2,0,0,0,0) #ok
+loadBug("smallBug", 1, fig_data_path = paste0(sourcePath, "test/tmp/"))
+smallBug = getBug("smallBug",1)
+h = getDsHist(smallBug)
+all(h[1,1:10] == c(1,0,0,2,0,0,0,0,1,0)) #ok
+all(h[2,1:10] == c(0,0,0,0,0,2,0,0,0,0)) #ok
+rmBug("smallBug", 1)
 
 #TCR0008 - downSampleBUGNTimes
 #####################################
@@ -142,14 +154,14 @@ unlist(strsplit(lines[[8]], "\\s+"))[2] == 37/3 #counts per cell, ok
 unlist(strsplit(lines[[9]], "\\s+"))[2] == 5/13 #totFracOnes, ok
 #Gene1 is low, Gene2 is high
 
-unlist(strsplit(lines[[10]], "\\s+"))[2:4] == c("1,","1,","3,") # f1H
-unlist(strsplit(lines[[11]], "\\s+"))[2:3] == c("1,","4,") # f1L
-unlist(strsplit(lines[[12]], "\\s+"))[2:4] == c("0.2,","0.2,","0.6,") # f1HFrac
-unlist(strsplit(lines[[13]], "\\s+"))[2:3] == c("0.2,","0.8,") # f1LFrac
-unlist(strsplit(lines[[14]], "\\s+"))[2:4] == c("1,","3,", "1,") # 1cpy
-unlist(strsplit(lines[[15]], "\\s+"))[2:4] == c("1,","1,", "1,") # 2cpy
-unlist(strsplit(lines[[16]], "\\s+"))[2:4] == c("0,","4,", "1,") # >3cpy
-unlist(strsplit(lines[[17]], "\\s+"))[2:4] == c("0.2,","0.6,", "0.2,") # 1cpy frac
+all(unlist(strsplit(lines[[10]], "\\s+"))[2:4] == c("1,","1,","3,")) # f1H
+all(unlist(strsplit(lines[[11]], "\\s+"))[2:3] == c("1,","4,")) # f1L
+all(unlist(strsplit(lines[[12]], "\\s+"))[2:4] == c("0.2,","0.2,","0.6,")) # f1HFrac
+all(unlist(strsplit(lines[[13]], "\\s+"))[2:3] == c("0.2,","0.8,")) # f1LFrac
+all(unlist(strsplit(lines[[14]], "\\s+"))[2:4] == c("1,","3,", "1,")) # 1cpy
+all(unlist(strsplit(lines[[15]], "\\s+"))[2:4] == c("1,","1,", "1,")) # 2cpy
+all(unlist(strsplit(lines[[16]], "\\s+"))[2:4] == c("0,","4,", "1,")) # >3cpy
+all(unlist(strsplit(lines[[17]], "\\s+"))[2:4] == c("0.2,","0.6,", "0.2,")) # 1cpy frac
 #skip the rest of the frac, it is a trivial calculation and they have a lot of decimals
 
 
