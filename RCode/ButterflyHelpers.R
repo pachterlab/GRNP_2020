@@ -14,8 +14,6 @@ library(dplyr)
 
 #library(Rcpp)
 
-source(paste0(sourcePath, "paths.R"))
-
 namedSave <- function(objlist, objNames, file) {
   names(objlist) <- objNames
   save(list=names(objlist), file=file, envir=list2env(objlist))
