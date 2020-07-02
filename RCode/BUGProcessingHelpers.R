@@ -37,29 +37,12 @@ geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
 #dir should include slash at the end
 #conserveMem will make the removal of multimapped reads approx. 4 times slower, but will preserve memory, which is good for notebooks
 #when running large datasets
-readBug <- function(dir, conserveMem = F) {
+readBug <- function(dir) {
   print(paste0("Reading BUG from ", dir, " ..."))
   bug = read.table(paste0(dir,"bus_output/bug.txt"), stringsAsFactors = F)
   print("Filtering multi-mapped reads...")
   
-  if (!conserveMem) {
-    isMult = str_detect(bug[[3]], fixed(","))
-  } else {
-    #do this with a for loop instead - the extra execution time is negligible, and we get more control of the memory use (notebooks run out of memory here for the LC dataset)
-    print("Using a slower processing method to preserve memory...")
-    sz = dim(bug)[1]
-    isMult = logical(sz)
-	#There seems to occationally be a strange memory issue for notebooks here.
-	#Therefore, divide in chunks and run the garbage collector in between
-	chunks = c(0, sz/6, 2*sz/6, 3*sz/6, 4*sz/6, 5*sz/6, sz)
-	for (chunk in 1:6) {
-		print(paste0("Processing chunk: ", chunk))
-		for (i in (chunks[chunk]+1):chunks[chunk + 1]) {
-		  isMult[i] = grepl(",",bug[i,3], fixed=T) 
-		}
-		gc()
-	}
-  }
+  isMult = str_detect(bug[[3]], fixed(","))
 
   print (paste0("Fraction multi-mapped reads: ", sum(isMult) / dim(bug)[1]))
 
