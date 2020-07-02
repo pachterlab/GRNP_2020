@@ -49,9 +49,15 @@ readBug <- function(dir, conserveMem = F) {
     print("Using a slower processing method to preserve memory...")
     sz = dim(bug)[1]
     isMult = logical(sz)
-    for (i in 1:sz) {
-  	  isMult[i] = grepl(",",bug[i,3], fixed=T) 
-    }
+	#There seems to occationally be a strange memory issue for notebooks here.
+	#Therefore, divide in chunks and run the garbage collector in between
+	chunks = c(0, sz/3, 2*sz/3, sz)
+	for (chunk = 1:3) {
+		for (i in (chunks[chunk]+1):chunks[chunk + 1]) {
+		  isMult[i] = grepl(",",bug[i,3], fixed=T) 
+		}
+		gc()
+	}
   }
 
   print (paste0("Fraction multi-mapped reads: ", sum(isMult) / dim(bug)[1]))
