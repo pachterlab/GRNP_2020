@@ -35,17 +35,23 @@ geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
 }
 
 #dir should include slash at the end
-readBug <- function(dir) {
+#conserveMem will make the removal of multimapped reads approx. 4 times slower, but will preserve memory, which is good for notebooks
+#when running large datasets
+readBug <- function(dir, conserveMem = F) {
   print(paste0("Reading BUG from ", dir, " ..."))
   bug = read.table(paste0(dir,"bus_output/bug.txt"), stringsAsFactors = F)
   print("Filtering multi-mapped reads...")
   
-  #isMult = sapply(bug[,3],function(s) grepl(",",s, fixed=T))
-  #do this with a for loop instead - the extra execution time is negligible, and we get more control of the memory use (notebooks run out of memory here for the LC dataset)
-  sz = dim(bug)[1]
-  isMult = logical(sz)
-  for (i in 1:sz) {
-	isMult[i] = grepl(",",bug[i,3], fixed=T) 
+  if (!conserveMem) {
+    isMult = sapply(bug[,3],function(s) grepl(",",s, fixed=T))
+  } else {
+    #do this with a for loop instead - the extra execution time is negligible, and we get more control of the memory use (notebooks run out of memory here for the LC dataset)
+    print("Using a slower processing method to preserve memory...")
+    sz = dim(bug)[1]
+    isMult = logical(sz)
+    for (i in 1:sz) {
+  	  isMult[i] = grepl(",",bug[i,3], fixed=T) 
+    }
   }
 
   print (paste0("Fraction multi-mapped reads: ", sum(isMult) / dim(bug)[1]))
@@ -75,10 +81,10 @@ fracOnesFunc <- function(d) {
 }
 
 
-createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, fig_data_path = figure_data_path) {
+createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, fig_data_path = figure_data_path, conserveMem = F) {
   #Generate data
   print(paste0("Generating data for ", name))
-  bug = readBug(bugdir)
+  bug = readBug(bugdir, conserveMem)
   #filter out low quality cells
   #Should have more than 200 UMIs
   UMIsPerCell = bug %>% group_by(barcode) %>% tally()
