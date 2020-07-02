@@ -43,7 +43,7 @@ readBug <- function(dir, conserveMem = F) {
   print("Filtering multi-mapped reads...")
   
   if (!conserveMem) {
-    isMult = sapply(bug[,3],function(s) grepl(",",s, fixed=T))
+    isMult = str_detect(bug[[3]], fixed(","))
   } else {
     #do this with a for loop instead - the extra execution time is negligible, and we get more control of the memory use (notebooks run out of memory here for the LC dataset)
     print("Using a slower processing method to preserve memory...")
