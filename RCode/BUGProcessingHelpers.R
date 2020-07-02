@@ -34,17 +34,24 @@ geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
   return (outGenes)
 }
 
-
 #dir should include slash at the end
 readBug <- function(dir) {
   print(paste0("Reading BUG from ", dir, " ..."))
   bug = read.table(paste0(dir,"bus_output/bug.txt"), stringsAsFactors = F)
   print("Filtering multi-mapped reads...")
-  isMult = sapply(bug[,3],function(s) grepl(",",s, fixed=T))
+  
+  #isMult = sapply(bug[,3],function(s) grepl(",",s, fixed=T))
+  #do this with a for loop instead - the extra execution time is negligible, and we get more control of the memory use (notebooks run out of memory here for the LC dataset)
+  sz = dim(bug)[1]
+  isMult = logical(sz)
+  for (i in 1:sz) {
+	isMult[i] = grepl(",",bug[i,3], fixed=T) 
+  }
 
   print (paste0("Fraction multi-mapped reads: ", sum(isMult) / dim(bug)[1]))
 
   uniquelymapped = bug[!isMult,] #just ignore the multimapped reads
+  rm(bug)
 
   print("Converting genes...")
 
