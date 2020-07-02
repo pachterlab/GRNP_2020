@@ -24,7 +24,7 @@ upSampleAndGetMeanExprPreSeqZTNB <- function(bugFile, t, incTol = 1e-5, iterIncT
   
   
   for (i in 1:numGenes) {
-    h = hist(collapsed[[i,2]], breaks=seq(0.5, max(collapsed[[i,2]])+0.5, by=1), plot = F)
+    h = hist(collapsed[[2]][[i]], breaks=seq(0.5, max(collapsed[[2]][[i]])+0.5, by=1), plot = F)
     freq = h$mids
     counts = h$counts
     added = 0
