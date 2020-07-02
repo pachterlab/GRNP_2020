@@ -71,10 +71,10 @@ fracOnesFunc <- function(d) {
 }
 
 
-createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, fig_data_path = figure_data_path, conserveMem = F) {
+createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, fig_data_path = figure_data_path) {
   #Generate data
   print(paste0("Generating data for ", name))
-  bug = readBug(bugdir, conserveMem)
+  bug = readBug(bugdir)
   #filter out low quality cells
   #Should have more than 200 UMIs
   UMIsPerCell = bug %>% group_by(barcode) %>% tally()
