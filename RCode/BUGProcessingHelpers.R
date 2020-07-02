@@ -7,7 +7,7 @@
 source(paste0(sourcePath, "ButterflyHelpers.R"))
 
 
-#library(stringr)
+library(stringr)
 library(dplyr)
 library(qdapTools)
 
