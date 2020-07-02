@@ -17,7 +17,6 @@ geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
   tr2g = read.table(Tr2gFile, stringsAsFactors = F)
   lookupTable = tr2g[,2:3]
   lookupTable= unique(lookupTable)
-#  lookupTableTranscr = tr2g[,c(1,3)]
   numGenes = length(geneIndices)
 
   inGenes = geneIndices;#allocate
@@ -25,7 +24,7 @@ geneIndices2Symbols <- function(geneIndices, genesFile, Tr2gFile) {
   for (i in 1:numGenes) {
     inGenes[i] = genenames[1 + as.numeric(geneIndices[i])]
   }
-  #check that the ens genes are really unique in the lookup table:
+   #check that the ens genes are really unique in the lookup table:
 #  length(lookupTable$V2)
 #  length(unique(lookupTable$V2)) #ok
 
