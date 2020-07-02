@@ -124,14 +124,18 @@ createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, 
       dsBug = downSampleBUG(filtBug,fracs[[i]])
     }
     #save the bug
+	gc()
     print("saving BUG...")
     bugName = genBugObjName(name, fracs[[i]])
     bugFileName = genBugFileName(fracs[[i]])
     namedSave(list(dsBug), list(bugName), paste0(subpath, bugFileName))
+	gc()
     
     #create stats
+    print("creating stats...")
     tmp = dsBug %>% group_by(gene) %>% summarise(UMIs = n(), counts=sum(count), CPM = n(), fracOnes = fracOnesFunc(count), countsPerUMI = mean(count))
     #CPM needs to be fixed, only UMI counts right now
+    print("cpm normalizing...")
     tmp$CPM = tmp$CPM*10^6/sum(tmp$CPM)
     #set the right column names here
     cn = c("gene",
@@ -145,6 +149,8 @@ createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, 
     statsList[[i]] = tmp
 	
 	rm(dsBug)
+	rm(tmp)
+	gc()
     
   }
   print("Done")
