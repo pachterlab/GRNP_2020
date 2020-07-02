@@ -177,7 +177,7 @@ downSampleManyTimesAndGetHist <- function(bug, fractionToKeep, numTimes=10) {
     for (j in 1:length(collapsed$gene)) {
 	  print(j)
       #include the zeros that were not filtered above, but skip them below
-      h = hist(collapsed[[j,2]], breaks=c(seq(-0.5, 99.5, by=1), 10000000), plot = F)
+      h = hist(collapsed[[2]][[j]], breaks=c(seq(-0.5, 99.5, by=1), 10000000), plot = F)
       #ignore the number of zeros, we just keep them in to preserve the gene order
       hgram[j,] = hgram[j,] + h$counts[-1]
     }
