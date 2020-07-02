@@ -116,7 +116,8 @@ createStandardBugsData <- function(bugdir, name, fracs, UmisPerCellLimit = 200, 
   #downsample bug, save it and collect stats
   statsList = vector(mode = "list", length = length(fracs))
   print(paste0("Down-sampling in total ", length(fracs), " bugs:"))
-  for (i in 1:length(fracs)) {
+  # slightly better for memory max val to loop backwards
+  for (i in length(fracs):1) { 
     print(paste0(i, ": Down-sampling to ", fracs[[i]]))
     if (fracs[[i]] == 1) {
       dsBug = filtBug
