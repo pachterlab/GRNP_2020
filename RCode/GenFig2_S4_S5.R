@@ -158,7 +158,7 @@ figS5 # for some reason this plot sometimes fail and show an error ("hbin" ...) 
 ggsave(
   paste0(figure_path, "FigS5.png"),
   plot = figS5, device = "png",
-  width = 6, height = 9, dpi = 300)
+  width = 6, height = 10, dpi = 300)
 
 
 #############################
