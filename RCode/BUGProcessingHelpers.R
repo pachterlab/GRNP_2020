@@ -52,7 +52,7 @@ readBug <- function(dir, conserveMem = F) {
 	#There seems to occationally be a strange memory issue for notebooks here.
 	#Therefore, divide in chunks and run the garbage collector in between
 	chunks = c(0, sz/3, 2*sz/3, sz)
-	for (chunk = 1:3) {
+	for (chunk in 1:3) {
 		for (i in (chunks[chunk]+1):chunks[chunk + 1]) {
 		  isMult[i] = grepl(",",bug[i,3], fixed=T) 
 		}
