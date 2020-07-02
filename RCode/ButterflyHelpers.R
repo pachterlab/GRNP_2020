@@ -173,7 +173,9 @@ downSampleManyTimesAndGetHist <- function(bug, fractionToKeep, numTimes=10) {
     collapsed = bugDS %>% group_by(gene) %>% do(countslist=c(.$count))
     print(paste0(i,":4"))
 	print(collapsed)
+	print(collapsed[[1,2]])
     for (j in 1:length(collapsed$gene)) {
+	  print(j)
       #include the zeros that were not filtered above, but skip them below
       h = hist(collapsed[[j,2]], breaks=c(seq(-0.5, 99.5, by=1), 10000000), plot = F)
       #ignore the number of zeros, we just keep them in to preserve the gene order
