@@ -5,21 +5,13 @@
 #source("GRNP_2020/RCode/pathsGoogleColab.R")
 
 library(magrittr)
-#library(data.table)
-#library(DropletUtils)
 library(Matrix)
-
 library(dplyr)
-#library(textTinyR)
-
-#library(Rcpp)
 
 namedSave <- function(objlist, objNames, file) {
   names(objlist) <- objNames
   save(list=names(objlist), file=file, envir=list2env(objlist))
 }
-
-
 
 genBugFileName = function(dsFactor) {
   paste0("Bug_", dsFactor*100, ".RData")

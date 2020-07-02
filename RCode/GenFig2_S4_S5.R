@@ -16,7 +16,6 @@ library(tidyverse)
 # Fig S4
 #####################################################
 
-##3_7: EVALPBMC vs EVALPBMC_SW
 
 loadStats("LC")
 loadStats("PBMC_NG")
@@ -32,11 +31,6 @@ loadStats("EVALPBMC_SW")
 loadStats("MRET")
 loadStats("MRET2")
 
-
-
-###############
-#Fig S4 - Hexbin plot
-###############
 
 AddToHexbinData = function(dat, umis, fracOnes, dataset) {
   logUmis = log2(umis)
