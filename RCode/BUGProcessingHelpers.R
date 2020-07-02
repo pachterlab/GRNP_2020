@@ -51,8 +51,9 @@ readBug <- function(dir, conserveMem = F) {
     isMult = logical(sz)
 	#There seems to occationally be a strange memory issue for notebooks here.
 	#Therefore, divide in chunks and run the garbage collector in between
-	chunks = c(0, sz/3, 2*sz/3, sz)
-	for (chunk in 1:3) {
+	chunks = c(0, sz/6, 2*sz/6, 3*sz/6, 4*sz/6, 5*sz/6, sz)
+	for (chunk in 1:6) {
+		print(paste0("Processing chunk: ", chunk))
 		for (i in (chunks[chunk]+1):chunks[chunk + 1]) {
 		  isMult[i] = grepl(",",bug[i,3], fixed=T) 
 		}
