@@ -1,3 +1,0 @@
-Gene1
-Gene2
-Gene3

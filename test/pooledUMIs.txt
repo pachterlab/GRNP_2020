@@ -1,4 +1,0 @@
-gene A	B
-Gene1 4	100
-Gene2 4 100
-Gene3 4 1

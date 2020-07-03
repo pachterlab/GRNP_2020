@@ -1,3 +1,0 @@
-Tr1	Gene1	Gene1
-Tr2	Gene2	Gene2
-Tr3	Gene3	Gene3
