@@ -6,6 +6,8 @@
 
 source(paste0(sourcePath,"ButterflyHelpers.R"))
 source(paste0(sourcePath,"preseqHelpers.R"))
+source(paste0(sourcePath,"GenBugSummary.R"))
+source(paste0(sourcePath,"BUGProcessingHelpers.R"))
 
 test_fig_data_path = paste0(sourcePath, "test/tmp/")
 
@@ -16,11 +18,6 @@ bugTest = read.table(paste0(sourcePath, "test/TestClosestDists.txt"), header = T
 all(ClosestDists(bugTest, bugTest[bugTest$gene=="g1",], 10) == c(2,0,1,3,0,0,0,0,0,0)) #ok
 all(ClosestDists(bugTest, bugTest[bugTest$gene=="g2",], 10) == c(1,0,0,0,1,0,0,0,0,0)) #ok
 all(ClosestDists(bugTest, bugTest[bugTest$gene=="g3",], 10) == c(0,0,0,0,1,2,0,0,0,0)) #ok
-
-#Expected results:
-#g1: 2 0 1 3
-#g2: 1 0 0 0 1
-#g3: 0 0 0 0 1 2
 
 
 #TCR0002 - geneIndices2Symbols
@@ -133,7 +130,6 @@ pv[2] > pv[3]#ok
 
 #TCR0010 - genBugSummary
 #####################################
-source(paste0(sourcePath,"GenBugSummary.R"))
 createStandardBugsData(paste0(sourcePath, "test/statsBug/"), "statsBug", c(0.5,1), UmisPerCellLimit = 1, fig_data_path = paste0(sourcePath, "test/tmp/"))
 loadBug("statsBug", fig_data_path = paste0(sourcePath, "test/tmp/"))
 genBugSummary("statsBug", "Gene1", "Gene2", 10, fig_data_path = paste0(sourcePath, "test/tmp/"))
