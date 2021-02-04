@@ -30,10 +30,11 @@ loadStats("EVALPBMC_DS")
 loadStats("EVALPBMC_SW")
 loadStats("MRET")
 loadStats("MRET2")
+loadStats("MARSSEQ")
 
 
 FSCMHistPlot = function(umis, fracones, title) {
-  filt = fracones[umis >= 200]
+  filt = fracones[umis >= 30]
   h = hist(filt, breaks=seq(0, 1, by=0.05), plot=F)
   df = data.frame(x = h$mids, y = h$density*0.05) #convert density to fraction of the total molecules
   fig = ggplot(df,aes(x=x,y=y)) +
@@ -70,8 +71,8 @@ ggsave(
   width = 6, height = 7, dpi = 300)
 
 tenxvariances = c(figS1_1$v,figS1_2$v,figS1_3$v,figS1_4$v,figS1_5$v,figS1_6$v,figS1_7$v,figS1_8$v,figS1_9$v,figS1_10$v)
-mean(tenxvariances)#0.02398302
-sd(tenxvariances)#0.008027863
+mean(tenxvariances)#0.03326073
+sd(tenxvariances)#0.01171921
 #hist(tenxvariances, 10)
 
 
@@ -87,12 +88,14 @@ ggsave(
   width = 4, height = 2, dpi = 300)
 
 dsvariances = c(figS2_1$v,figS2_2$v)
-mean(dsvariances)#0.01268473
-sd(dsvariances)#0.00400427
+mean(dsvariances)#0.01790591
+sd(dsvariances)#0.001654036
 
 figS3_1 = FSCMHistPlot(statsEVALPBMC_SW$UMIs_EVALPBMC_SW_d_100, statsEVALPBMC_SW$FracOnes_EVALPBMC_SW_d_100, "EVALPBMC_SW")
+figS3_2 = FSCMHistPlot(statsMARSSEQ$UMIs_MARSSEQ_d_100, statsMARSSEQ$FracOnes_MARSSEQ_d_100, "MARSSEQ")
 
-figS3 = figS3_1$f
+figS3 = ggarrange(figS3_1$f, figS3_2$f, nrow=1, ncol=2,
+                  labels=c("A","B"))
 
 #figS3 = ggarrange(figS3_1, nrow=1, ncol=1,
 #                       labels=c("A"))
@@ -100,10 +103,12 @@ figS3
 ggsave(
   paste0(figure_path, "FigS3.png"),
   plot = figS3, device = "png",
-  width = 2, height = 2, dpi = 300)
+  width = 4, height = 2, dpi = 300)
 
 swvariances = c(figS3_1$v)
-mean(swvariances)#0.01970717
+mean(swvariances)#0.02304077
+MARSSEQvariances = c(figS3_2$v)
+mean(MARSSEQvariances)#0.01653287
 
 
 
