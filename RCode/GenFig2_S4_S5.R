@@ -30,6 +30,7 @@ loadStats("EVALPBMC_DS")
 loadStats("EVALPBMC_SW")
 loadStats("MRET")
 loadStats("MRET2")
+loadStats("MARSSEQ")
 
 
 AddToHexbinData = function(dat, umis, fracOnes, dataset) {
@@ -61,8 +62,9 @@ dat = AddToHexbinData(dat, statsMRET2$UMIs_MRET2_d_100, statsMRET2$FracOnes_MRET
 dat = AddToHexbinData(dat, statsEVALPBMC_DS$UMIs_EVALPBMC_DS_d_100, statsEVALPBMC_DS$FracOnes_EVALPBMC_DS_d_100, "EVALPBMC_DS")
 dat = AddToHexbinData(dat, statsMRET$UMIs_MRET_d_100, statsMRET$FracOnes_MRET_d_100, "MRET")
 dat = AddToHexbinData(dat, statsEVALPBMC_SW$UMIs_EVALPBMC_SW_d_100, statsEVALPBMC_SW$FracOnes_EVALPBMC_SW_d_100, "EVALPBMC_SW")
+dat = AddToHexbinData(dat, statsMARSSEQ$UMIs_MARSSEQ_d_100, statsMARSSEQ$FracOnes_MARSSEQ_d_100, "MARSSEQ")
 
-dat$ds = factor(dat$ds, levels = c("PBMC_V3","PBMC_V3_2","PBMC_V3_3","PBMC_NG","PBMC_NG_2","PBMC_V2","EVAL","EVALPBMC","LC","MRET2","EVALPBMC_DS","MRET","EVALPBMC_SW"))
+dat$ds = factor(dat$ds, levels = c("PBMC_V3","PBMC_V3_2","PBMC_V3_3","PBMC_NG","PBMC_NG_2","PBMC_V2","EVAL","EVALPBMC","LC","MRET2","EVALPBMC_DS","MRET","EVALPBMC_SW","MARSSEQ"))
 
 #create figure:
 figS4 = ggplot(dat) +
@@ -80,7 +82,7 @@ figS4 # for some reason this plot sometimes fail and show an error ("hbin" ...) 
 ggsave(
   paste0(figure_path, "FigS4.png"),
   plot = figS4, device = "png",
-  width = 7, height = 9, dpi = 300)
+  width = 7, height = 11, dpi = 300)
 
 
 #############################
@@ -126,13 +128,14 @@ dat2 = AddToHexbinData2(dat2, "EVALPBMC", "EVALPBMC_DS")
 dat2 = AddToHexbinData2(dat2, "EVALPBMC", "EVALPBMC_SW")
 dat2 = AddToHexbinData2(dat2, "EVALPBMC_DS", "EVALPBMC_SW")
 dat2 = AddToHexbinData2(dat2, "MRET2", "MRET")
+dat2 = AddToHexbinData2(dat2, "EVAL", "MARSSEQ")
 
 #dat2 = AddToHexbinData2(dat2, "PBMC_V3_3", "PBMC_V2")
 
 #specify the order of the plots
 dat2$ds = factor(dat2$ds, levels = c("PBMC_V3_3 vs PBMC_V3_2", "PBMC_V3_3 vs PBMC_V2", "PBMC_V2 vs EVALPBMC",
                                      "PBMC_V2 vs LC", "EVALPBMC vs EVALPBMC_DS", "EVALPBMC vs EVALPBMC_SW", 
-                                     "EVALPBMC_DS vs EVALPBMC_SW", "MRET2 vs MRET"))
+                                     "EVALPBMC_DS vs EVALPBMC_SW", "MRET2 vs MRET", "EVAL vs MARSSEQ"))
 
 dfline = data.frame(x=c(0,1), y=c(0,1))
 
