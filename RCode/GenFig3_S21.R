@@ -58,7 +58,7 @@ ggsave(
 
 
 #########################
-# Fig S20 (Sampling noise)
+# Fig S21 (Sampling noise)
 #########################
 #cpm and log transform
 
@@ -70,7 +70,7 @@ plotdata2 = tibble(gene=ldata2$gene,
 dfline = data.frame(x=c(0,16), y=c(0,0))
 dummyData = data.frame(x=c(0,0), y=c(1.1, -1.5))
 
-figS20 = ggplot(plotdata2) +
+figS21 = ggplot(plotdata2) +
   stat_binhex(bins=60,na.rm = TRUE, mapping=aes(x = x, y=y, fill = log(..count..))) + # opts(aspect.ratio = 1) +
   #facet_wrap(facets = ~  variable, scales = "free_x", labeller = labl, ncol=3) +
   geom_line(data=dfline, mapping = aes(x=x, y=y), color="black", size=1) + 
@@ -82,11 +82,11 @@ figS20 = ggplot(plotdata2) +
         #legend.position= "none",
         strip.background = element_blank())
 
-figS20 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
+figS21 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(
-  paste0(figure_path, "FigS20.png"),
+  paste0(figure_path, "FigS21.png"),
   plot = figS20, device = "png",
   width = 3, height = 4, dpi = 300)
 

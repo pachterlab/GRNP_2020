@@ -12,7 +12,7 @@ library("ggpubr")
 library(tictoc)
 
 #############################
-# Create fig S7 - S19
+# Create fig S7 - S20
 #############################
 
 PlotEvaluationForDS <- function(dsid) {
@@ -201,13 +201,14 @@ PlotEvaluationForDS("PBMC_V2")
 PlotEvaluationForDS("LC")
 PlotEvaluationForDS("MRET")
 PlotEvaluationForDS("MRET2")
+PlotEvaluationForDS("MARSSEQ")
 
 #############################
 # Create fig S6
 #############################
 
 
-dsidlist = c("EVAL", "EVALPBMC", "EVALPBMC_DS", "EVALPBMC_SW", "PBMC_V3", "PBMC_V3_2", "PBMC_V3_3", "PBMC_NG", "PBMC_NG_2", "PBMC_V2", "LC", "MRET", "MRET2")
+dsidlist = c("EVAL", "EVALPBMC", "EVALPBMC_DS", "EVALPBMC_SW", "PBMC_V3", "PBMC_V3_2", "PBMC_V3_3", "PBMC_NG", "PBMC_NG_2", "PBMC_V2", "LC", "MRET", "MRET2", "MARSSEQ")
 
 
 numds = length(dsidlist)

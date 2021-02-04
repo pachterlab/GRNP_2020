@@ -27,6 +27,7 @@ createStandardBugsData(paste0(dataPath,"PBMC_NG2/"), "PBMC_NG_2", c(0.05, 0.1, 0
 #createStandardBugsData(paste0(dataPath,"FISH_CMP/"), "FISH_CMP", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
 createStandardBugsData(paste0(dataPath,"MRET/"), "MRET", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
 createStandardBugsData(paste0(dataPath,"MRET2/"), "MRET2", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
+createStandardBugsData(paste0(dataPath,"MARSSEQ/"), "MRET2", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
 
 
 #figure out suitable human genes for many and few single-copy molecules
@@ -72,6 +73,7 @@ genBugSummary("PBMC_NG_2", "FGF23", "RPS10", 12)
 genBugSummary("FISH_CMP", "FGF23", "RPS10", 12)
 genBugSummary("MRET", "Vmn1r13", "Ubb", 10)
 genBugSummary("MRET2", "Vmn1r13", "Ubb", 10)
+genBugSummary("MARSSEQ", "Vmn1r13", "Ubb", 10)
 
 
 
