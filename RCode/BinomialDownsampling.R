@@ -25,7 +25,6 @@ binomialDownsampling = function(bug, fractionsToKeep) {
   
   for (i in 1:numGenes) {
     h = hist(collapsed[[2]][[i]], breaks=seq(0.5, max(collapsed[[2]][[i]])+0.5, by=1), plot = F)$counts
-    totCounts = h %*% (1:length(h))
     lh = length(h)
     for (j in 1:length(fractionsToKeep)) {
       ftk = fractionsToKeep[j]

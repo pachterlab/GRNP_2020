@@ -129,14 +129,21 @@ seurObj <- FindNeighbors(seurObj, dims = 1:10)
 seurObj <- FindClusters(seurObj, resolution = 0.5)
 seurObj <- RunUMAP(seurObj, dims = 1:10)
 pA = DimPlot(seurObj, reduction = "umap", group.by = "ds_source", cols=c("blue", "red"))
-pA = pA + ggtitle("Uncorrected")
+pA = pA + ggtitle("Batch correction - uncorrected")
 pA = pA +   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
                   legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
                   strip.text.x = element_text(size = 12, face = "bold"),
                   #legend.position= "none",
+                  plot.title = element_text(size=14, face = "bold"),
                   strip.background = element_blank())
-
 pA
+
+
+#extract two things for calculations - the UMAP coordinates and the source
+uncorrCoords = seurObj[["umap"]]@cell.embeddings
+uncorrSource = dsSource
+#sum(rownames(uncorrCoords) != names(uncorrSource)) #test, 0, ok
+
 
 #Now, correct by down-sampling NG2 to 0.49
 ##############################
@@ -210,26 +217,64 @@ seurObj <- FindNeighbors(seurObj, dims = 1:10)
 seurObj <- FindClusters(seurObj, resolution = 0.5)
 seurObj <- RunUMAP(seurObj, dims = 1:10)
 pB = DimPlot(seurObj, reduction = "umap", group.by = "ds_source", cols=c("blue", "red"))
-pB = pB + ggtitle("Corrected")
+pB = pB + ggtitle("Batch correction - Corrected")
 pB = pB +   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
                   legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
                   strip.text.x = element_text(size = 12, face = "bold"),
                   #legend.position= "none",
+                  plot.title = element_text(size=14, face = "bold"),
                   strip.background = element_blank())
 
 pB
 
-fig5 = ggarrange(pA, pB, nrow=1, ncol=2, labels=c("A","B"))
+corrCoords = seurObj[["umap"]]@cell.embeddings
+corrSource = dsSource
+
+
+
+fig5AB = ggarrange(pA, pB, nrow=1, ncol=2, labels=c("A","B"))
 
 ggsave(
-  paste0(figure_path, "Fig5.png"),
-  plot = fig5, device = "png",
-  width = 8, height = 5, dpi = 300)
+  paste0(figure_path, "Fig5AB.png"),
+  plot = fig5AB, device = "png",
+  width = 9, height = 5, dpi = 300)
+
+#Calculate the 10 nearest neighbors for each cell
+
+
+getKnnFrac = function(crds, src, numNeighbors) {
+  nn = length(src)
+  xs = as.data.frame(crds)$UMAP_1
+  ys = as.data.frame(crds)$UMAP_2
+  res = rep(NA, nn)
+  for (i in 1:nn) {
+    sci = src[i]
+    sc = src[-i]
+    dists = sqrt((xs[i] - xs[-i])^2 + (ys[i] - ys[-i])^2) #remove self
+    srt = sort(dists, index.return=TRUE)
+    res[i] = sum(sci == sc[srt$ix[1:numNeighbors]])/numNeighbors
+  }
+  return (mean(res))
+}
+
+getKnnFrac(uncorrCoords, uncorrSource, 10)#0.8185659
+getKnnFrac(corrCoords, corrSource, 10)#0.6765698
+
+#test case:
+#     0 1 2.2
+#0    0 0 0
+#0.9  1 1 0
+#2    1 1 0
+#3.1  1 1 0
+testCoords = tibble(UMAP_1 = rep(c(0,1,2.2),4), UMAP_2 = c(rep(0,3), rep(0.9,3), rep(2,3), rep(3.1,3)))
+testSrc = c(0,0,0,1,1,0,1,1,0,1,1,0)
+expRes = mean(c(0.5, 0.5, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 0.5))
+res = getKnnFrac(testCoords, testSrc, 2)
+expRes - res < 0.0000001 #ok
 
 
 
-
-#################
+################
 # test the binomial downsampling function
 #################
 

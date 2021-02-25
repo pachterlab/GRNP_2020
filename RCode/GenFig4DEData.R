@@ -31,6 +31,6 @@ loadBug("EVALPBMC")
 d1 = genFig4Data("EVALPBMC_DS", "EVALPBMC", predVals_1)
 
 
-saveRDS(d1, paste0(figure_data_path, "Fig4_d1.RDS"))
+saveRDS(d1, paste0(figure_data_path, "Fig4_DE.RDS"))
 
 

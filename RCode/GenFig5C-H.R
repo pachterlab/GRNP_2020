@@ -178,11 +178,12 @@ pA = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color=dsPlot$col, shape=1, size=1) +
   geom_abline(slope = fit$coefficients[2], intercept = fit$coefficients[1], colour="#008800", size=1.3) +
   geom_text(data=dsText, label=texts, size=4, hjust = 0, color=dsPlot$col, parse=FALSE) +
-  ggplot2::labs(y=expression(Log[2]*"(CPM + 1)"), x="Copies per UMI", title="ALDH2 across clusters, uncorr.") +
+  ggplot2::labs(y=expression(Log[2]*"(CPM + 1)"), x="Copies per UMI", title="ALDH2 acr. clusters, uncorr.") +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
         #legend.position= "none",
+        plot.title = element_text(face = "bold"),
         strip.background = element_blank())
 pA
 
@@ -224,7 +225,9 @@ pB = ggplot(dsPlot,aes(x=x,y=y)) +
   labs(y="CPM", x="Counts per UMI", title="ALDH2, T cells") +
   ylim(0,50) +
   theme(panel.background = element_rect("white", "white", 0, 
-                                        0, "white"))
+                                        0, "white"),
+        plot.title = element_text(face = "bold")
+  )
 pB
 
 dsPlot = data.frame(x = 1:hend, y = hmScaled)
@@ -233,7 +236,9 @@ pC = ggplot(dsPlot,aes(x=x,y=y)) +
   labs(y="CPM", x="Counts per UMI", title="ALDH2, Monocytes") +
   ylim(0,50) +
   theme(panel.background = element_rect("white", "white", 0, 
-                                        0, "white"))
+                                        0, "white"),
+        plot.title = element_text(face = "bold")
+  )
 pC
 
 #calculate CPM of raw counts
@@ -376,11 +381,12 @@ pE = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color="black", shape=1, size=1) +
   geom_abline(slope = fit$coefficients[2], intercept = fit$coefficients[1], colour="#008800", size=1.3) +
   geom_text(data=dsText, label=paste0("R = ",format(cor(cu,scLogExpr), digits=2)), size=5, hjust = 0, parse=FALSE) +
-  ggplot2::labs(y=expression(Log[2]*"(Norm. Expr + pc)"), x="Copies per UMI", title="Ampl. across clusters, uncorr.") +
+  ggplot2::labs(y=expression(Log[2]*"(Norm. Expr + pc)"), x="Copies per UMI", title="Ampl. acr.clusters, uncorr.") +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
         #legend.position= "none",
+        plot.title = element_text(face = "bold"),
         strip.background = element_blank())
 pE
 
@@ -470,7 +476,7 @@ fit = lm(logExpr~cu)
 dsPlot = tibble(x=cu, y=logExpr, col=c(colors[1],colors[1],colors[1],colors[2],"#000000",colors[1],colors[2]))
 dsText = tibble(x=cu + 0.2, y=logExpr)
 #fix the texts a bit so they are visible and don't overlap
-#dsText$x[7] = dsText$x[7] - 1.5
+dsText$x[7] = dsText$x[7] - 1.5
 dsText$y[2] = dsText$y[2] - 0.05
 dsText$y[3] = dsText$y[3] + 0.05
 
@@ -478,10 +484,11 @@ pD = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color=dsPlot$col, shape=1, size=1) +
   geom_abline(slope = fit$coefficients[2], intercept = fit$coefficients[1], colour="#008800", size=1.3) +
   geom_text(data=dsText, label=texts, size=4, hjust = 0, color=dsPlot$col, parse=FALSE) +
-  ggplot2::labs(y=expression(Log[2]*"(pseudoTPM + pc)"), x="Copies per UMI", title="ALDH2 across clusters, corr.") +
+  ggplot2::labs(y=expression(Log[2]*"(pseudoTPM + pc)"), x="Copies per UMI", title="ALDH2 acr. clusters, corr.") +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
+        plot.title = element_text(face = "bold"),
         #legend.position= "none",
         strip.background = element_blank())
 pD
@@ -513,19 +520,20 @@ pF = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color="black", shape=1, size=1) +
   geom_abline(slope = fit$coefficients[2], intercept = fit$coefficients[1], colour="#008800", size=1.3) +
   geom_text(data=dsText, label=paste0("R = ",format(cor(cu,scLogExpr), digits=2)), size=5, hjust = 0, parse=FALSE) +
-  ggplot2::labs(y=expression(Log[2]*"(Norm. Expr + pc)"), x="Copies per UMI", title="Ampl. across clusters, corr.") +
+  ggplot2::labs(y=expression(Log[2]*"(Norm. Expr + pc)"), x="Copies per UMI", title="Ampl. acr. clusters, corr.") +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
+        plot.title = element_text(face = "bold"),
         #legend.position= "none",
         strip.background = element_blank())
 pF
 
-fig7 = ggarrange(pB, pC, pA, pD, pE, pF, nrow=2, ncol=3, labels=c("A","B","C","D","E","F"))
+fig5CH = ggarrange(pB, pC, pA, pD, pE, pF, nrow=2, ncol=3, labels=c("C","D","E","F","G","H"))
 
 ggsave(
-  paste0(figure_path, "Fig7.png"),
-  plot = fig7, device = "png",
+  paste0(figure_path, "Fig5C-H.png"),
+  plot = fig5CH, device = "png",
   width = 9, height = 6, dpi = 300)
 
 #Create potential supplementary figure with ZTNB

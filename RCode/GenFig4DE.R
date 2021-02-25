@@ -26,7 +26,7 @@ loadStats("EVALPBMC_DS")
 loadStats("EVALPBMC")
 
 #get precalculated data (generated using GenFig4)
-precalcData = readRDS(paste0(figure_data_path, "Fig4_d1.RDS"))
+precalcData = readRDS(paste0(figure_data_path, "Fig4_DE.RDS"))
 
 #l1 = genFig4Plot("EVALPBMC_DS", "EVALPBMC", predVals_1, 100, "Drop-Seq vs Chromium v2", d1)
 
@@ -78,7 +78,7 @@ xes = c(log2(dsx), log2(predVals))
 
 
 ###########################################
-#Fig A
+#Fig 4D
 ###########################################
 
 
@@ -98,25 +98,27 @@ y = corsBothPred
 
 df = data.frame(x=x, y=y, pred = pred)
 
-fig4A = ggplot(df, aes(x=x, y=y, group=pred, linetype=pred)) + 
+fig4D = ggplot(df, aes(x=x, y=y, group=pred, linetype=pred)) + 
   geom_line() + #geom_point(size=1.5) +
   labs(y="CCC", x=expression(Log[2]*"(Prediction range)")) +
   ggtitle("Concordance Between Datasets") +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"), legend.position= "bottom", 
-        legend.direction = "vertical", legend.box = "horizontal", legend.title = element_blank()) +
+        legend.direction = "vertical", legend.box = "horizontal", legend.title = element_blank(), 
+        plot.title = element_text(face = "bold"),
+        ) +
   guides(fill=guide_legend(nrow=2, ncol=1, byrow=F))
 
-print(fig4A)
+print(fig4D)
 
 #save them individually since we want different heights, so the x axis labels of both plots are at the same y coord:
 ggsave(
-  paste0(figure_path, "Fig4A.png"),
-  plot = fig4A, device = "png",
+  paste0(figure_path, "Fig4D.png"),
+  plot = fig4D, device = "png",
   width = 3.65, height = 4.3, dpi = 300)
 
 
 ###########################################
-#Fig 4B
+#Fig 4E
 ###########################################
 
 g1 = "MTRNR2L1"
@@ -140,20 +142,20 @@ technology = factor(rep(c(rep(0,numPoints), rep(1,numPoints)),length(geneNames))
 
 df = data.frame(x=x, y=y, dspred = pred, Gene = genef, Technology = technology, stringsAsFactors = F)
 
-fig4B = ggplot(df, aes(x=x, y=y, colour = Gene, linetype=dspred, shape=Technology, group=interaction(Gene,dspred, Technology))) + 
+fig4E = ggplot(df, aes(x=x, y=y, colour = Gene, linetype=dspred, shape=Technology, group=interaction(Gene,dspred, Technology))) + 
   geom_line() + geom_point(size=1.2) +
   ggtitle("Prediction per Gene") +
   xlab(expression(Log[2]*"(sampling factor)")) + ylab(expression(Log[2]*"(CPM + 1)")) +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "vertical", legend.box = "horizontal", legend.title = element_blank(),
-        strip.background = element_blank()) +
+        plot.title = element_text(face = "bold"), strip.background = element_blank()) +
   guides(fill=guide_legend(nrow=2, ncol=1, byrow=F))
-fig4B
+fig4E
 
 
 ggsave(
-  paste0(figure_path, "Fig4B.png"),
-  plot = fig4B, device = "png",
+  paste0(figure_path, "Fig4E.png"),
+  plot = fig4E, device = "png",
   width = 3.65, height = 4.545, dpi = 300)
 
 

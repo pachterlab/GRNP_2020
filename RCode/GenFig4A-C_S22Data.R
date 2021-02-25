@@ -6,6 +6,7 @@
 
 source(paste0(sourcePath,"ButterflyHelpers.R"))
 source(paste0(sourcePath,"preseqHelpers.R"))
+source(paste0(sourcePath,"BinomialDownsampling.R"))
 
 
 ####################################################
@@ -33,7 +34,14 @@ loadPooledHistogramDS("EVALPBMC")
 poolHistList = poolHistograms(dsid, dsBug, otherIds)
 
 loadStats(dsid)
-load(file=paste0(figure_data_path, "PBMC_V3_3_ds10_20Times.RData")) #gets the data for comparison with sampling noise
+
+#create data for supplementary plot
+loadBug(dsid)
+bug = getBug(dsid)
+binDs = binomialDownsampling(bug, 0.1)
+
+
+
 
 #no prediction
 fromStats = tibble(gene = statsPBMC_V3_3$gene, 
@@ -54,7 +62,7 @@ colnames(predPool) = c("gene", "poolpred")
 
 
 #sampling noise
-colnames(PBMC_V3_3_ds10_20Times) = c("gene", "sampling")
+colnames(binDs) = c("gene", "sampling")
 
 
 
@@ -67,7 +75,7 @@ m2 = inner_join(m1, predPool, by="gene")
 
 ldata = m2
 
-m3 = inner_join(fromStats, PBMC_V3_3_ds10_20Times, by="gene")
+m3 = inner_join(fromStats, binDs, by="gene")
 
 ldata2 = m3
 
@@ -83,6 +91,6 @@ for (i in 2:5) {
 }
 
 
-saveRDS(ldata, paste0(figure_data_path, "Fig3_ldata.RDS"))
-saveRDS(ldata2, paste0(figure_data_path, "Fig3_ldata2.RDS"))
+saveRDS(ldata, paste0(figure_data_path, "Fig4AC_ldata.RDS"))
+saveRDS(ldata2, paste0(figure_data_path, "Fig4AC_ldata2.RDS"))
 

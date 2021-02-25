@@ -12,8 +12,8 @@ library(hexbin)
 library(dplyr)
 
 
-ldata = readRDS(paste0(figure_data_path, "Fig3_ldata.RDS"))
-ldata2 = readRDS(paste0(figure_data_path, "Fig3_ldata2.RDS"))
+ldata = readRDS(paste0(figure_data_path, "Fig4AC_ldata.RDS"))
+ldata2 = readRDS(paste0(figure_data_path, "Fig4AC_ldata2.RDS"))
 
 
 
@@ -58,7 +58,7 @@ ggsave(
 
 
 #########################
-# Fig S21 (Sampling noise)
+# Fig S22 (Sampling noise)
 #########################
 #cpm and log transform
 
@@ -70,7 +70,7 @@ plotdata2 = tibble(gene=ldata2$gene,
 dfline = data.frame(x=c(0,16), y=c(0,0))
 dummyData = data.frame(x=c(0,0), y=c(1.1, -1.5))
 
-figS21 = ggplot(plotdata2) +
+figS22 = ggplot(plotdata2) +
   stat_binhex(bins=60,na.rm = TRUE, mapping=aes(x = x, y=y, fill = log(..count..))) + # opts(aspect.ratio = 1) +
   #facet_wrap(facets = ~  variable, scales = "free_x", labeller = labl, ncol=3) +
   geom_line(data=dfline, mapping = aes(x=x, y=y), color="black", size=1) + 
@@ -82,12 +82,12 @@ figS21 = ggplot(plotdata2) +
         #legend.position= "none",
         strip.background = element_blank())
 
-figS21 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
+figS22 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(
-  paste0(figure_path, "FigS21.png"),
-  plot = figS20, device = "png",
+  paste0(figure_path, "FigS22.png"),
+  plot = figS22, device = "png",
   width = 3, height = 4, dpi = 300)
 
 
