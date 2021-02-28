@@ -28,24 +28,39 @@ colors = gg_color_hue(2)
 ########################
 
 #Get tx data from EVALPBMC 10X
-tx10x = read_count_output(dir="E:/Butterfly/EVALPBMC/cu_processing/count_output_tx_m", "output", tcc=TRUE)
+#tx10x = read_count_output(dir="E:/Butterfly/EVALPBMC/cu_processing/count_output_tx_m", "output", tcc=TRUE)
 
-dim(tx10x)
-countsPerCell = sparse_Sums(tx10x)
-tx10x = tx10x[,countsPerCell >= 200]
-tx10x = tx10x[sparse_Sums(tx10x, rowSums = TRUE) != 0,]
-dim(tx10x)#127593   5176   _m:2590285    5319
+#dim(tx10x)
+#countsPerCell = sparse_Sums(tx10x)
+#tx10x = tx10x[,countsPerCell >= 200]
+#tx10x = tx10x[sparse_Sums(tx10x, rowSums = TRUE) != 0,]
+#dim(tx10x)#127593   5176   _m:2590285    5319
 
 
 #Seurat cannot handle the tx data
 #So, cluster on gene data instead, it doesn't really matter
 gn10x = read_count_output(dir="E:/Butterfly/EVALPBMC/cu_processing/count_output", "output", tcc=FALSE)
 countsPerCell = sparse_Sums(gn10x)
-gn10x = gn10x[,countsPerCell >= 200]
+gn10x = gn10x[,countsPerCell > 200]
 gn10x = gn10x[sparse_Sums(gn10x, rowSums = TRUE) != 0,]
 gn10xRawCounts = read_count_output(dir="E:/Butterfly/EVALPBMC/cu_processing/raw_count_output/", "output", tcc=FALSE)
-gn10xRawCounts = gn10xRawCounts[,countsPerCell >= 200]
+gn10xRawCounts = gn10xRawCounts[,countsPerCell > 200]
 gn10xRawCounts = gn10xRawCounts[sparse_Sums(gn10xRawCounts, rowSums = TRUE) != 0,]
+#convert the genes to gene symbols
+tr2g = read.table(paste0(dataPath, "EVALPBMC/bus_output/transcripts_to_genes.txt"), stringsAsFactors = F)
+lookupTable = tr2g[,2:3]
+lookupTable= unique(lookupTable)
+
+outGenes = lookup(row.names(gn10x), lookupTable)
+
+#check:
+sum(rownames(gn10x) != rownames(gn10xRawCounts))#0, so the genes are in the same order
+
+row.names(gn10x) = outGenes
+gn10x = aggregate.Matrix(gn10x, outGenes, fun='sum')
+row.names(gn10xRawCounts) = outGenes
+gn10xRawCounts = aggregate.Matrix(gn10xRawCounts, outGenes, fun='sum')
+
 
 
 set.seed(1)
@@ -57,6 +72,16 @@ d = CreateSeuratObject(counts = gn10x, project = "10x", min.cells = 0, min.featu
 
 #create variable for mitochondrial count fraction
 d[["percent.mt"]] <- PercentageFeatureSet(d, pattern = "^MT-")
+VlnPlot(d, features = c("percent.mt"))
+
+cellFilter = d$percent.mt < 10
+
+#easisest to recreate the Seurat object
+
+gn10x = gn10x[,cellFilter]
+gn10xRawCounts = gn10xRawCounts[,cellFilter]
+d = CreateSeuratObject(counts = gn10x, project = "10x", min.cells = 0, min.features = 0)
+
 
 #library size normalization + change to log scale
 d <- NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 10000)
@@ -80,11 +105,24 @@ d <- RunUMAP(d, dims = 1:10)
 
 clust = d$seurat_clusters
 
-d = RenameIdents(object = d, `0` = "T1", `1` = "T2", `2` = "T3", `3` = "M1", `4` = "B", `5` = "T4", `6` = "M2", `7` = "U1", `8` = "U2", `9` = "U3", `10` = "U4",  `11` = "U5")
+d2 = subset(d, seurat_clusters == 0 | seurat_clusters == 1 | seurat_clusters == 2 | seurat_clusters == 6  | seurat_clusters == 7 )
+DimPlot(d2, reduction = "umap")
+d2 = subset(d, seurat_clusters == 3 | seurat_clusters == 5 )
+DimPlot(d2, reduction = "umap")
+d2 = subset(d, seurat_clusters == 4)
+DimPlot(d2, reduction = "umap")
+
+sum(clust == 7)#check number of cells in cluster 7: 397
+
+#d = RenameIdents(object = d, `0` = "T1", `1` = "T2", `2` = "T3", `3` = "M1", `4` = "B", `5` = "T4", `6` = "M2", `7` = "U1", `8` = "U2", `9` = "U3", `10` = "U4",  `11` = "U5")
+d = RenameIdents(object = d, `0` = "T1", `1` = "T2", `2` = "T3", `3` = "M1", `4` = "B", `5` = "M2", `6` = "T4", `7` = "T5", `8` = "U1", `9` = "U2", `10` = "U3",  `11` = "U4")
+
+clust2 = d$seurat_clusters
+
 
 #show clustering
 pSupA = DimPlot(d, reduction = "umap")
-
+pSupA
 
 #FeaturePlot(d, features = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1"))
 
@@ -118,7 +156,7 @@ rownames(cuPerCluster) = rownames(gn10x)
 UMIsPerCluster = matrix(, nrow = nrow(cuMatrix), ncol = 12) #number of clusters is 12
 rownames(UMIsPerCluster) = rownames(gn10x)
 cellsPerCluster = rep(NA,12)
-clusterNames = c("T1","T2","T3","M1","B","T4","M2","7","8","9","10","11") #cluster 4 is b cells, 3,6 are monocytes, 0,1,2,5 are T cells/NK cells
+clusterNames = c("T1","T2","T3","M1","B","M2","T4","T5","U1","U2","U3","U4") #cluster 4 is b cells, 3,6 are monocytes, 0,1,2,5 are T cells/NK cells
 colnames(cuPerCluster) = clusterNames
 colnames(UMIsPerCluster) = clusterNames
 
@@ -129,8 +167,8 @@ for (i in 1:12) {
   UMIsPerCluster[,i] = sparse_Sums(gn10x[,sel], rowSums = TRUE)
 }
 cellsPerCluster
-clusterFilt = 0:11
-clusterFilt = clusterFilt[cellsPerCluster > 100]
+#clusterFilt = 0:11
+#clusterFilt = clusterFilt[cellsPerCluster > 100]
 
 cuPerClusterFilt = cuPerCluster[,cellsPerCluster > 300]
 UMIsPerClusterFilt = UMIsPerCluster[,cellsPerCluster > 300]
@@ -161,18 +199,19 @@ logtrans = log2(TPMsForVariableGenes + 1)
 
 max(variances, na.rm=TRUE)
 
-geneSel = rownames(cuForVariableGenes) == "ENSG00000111275.12" #ALDH2
+geneSel = rownames(cuForVariableGenes) == "ALDH2" #ALDH2
 cu = cuForVariableGenes[geneSel,]
 logExpr = logtrans[geneSel,]
 texts = names(cu)
 
-dsPlot = tibble(x=cu, y=logExpr, col=c(colors[1],colors[1],colors[1],colors[2],"#000000",colors[1],colors[2]))
+dsPlot = tibble(x=cu, y=logExpr, col=c(colors[1],colors[1],colors[1],colors[2],"#000000",colors[2],colors[1],colors[1]))
 dsText = tibble(x=cu + 0.2, y=logExpr)
 fit = lm(logExpr~cu)
+summary(fit) #p = 0.0040, F-Test
 #fix the texts a bit so they are visible and don't overlap
-dsText$x[7] = dsText$x[7] - 1.5
-dsText$y[2] = dsText$y[2] - 0.05
-dsText$y[6] = dsText$y[6] + 0.05
+dsText$x[6] = dsText$x[6] - 1.5
+dsText$y[8] = dsText$y[8] + 0.05
+dsText$y[3] = dsText$y[3] - 0.05
 
 pA = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color=dsPlot$col, shape=1, size=1) +
@@ -188,14 +227,16 @@ pA = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
 pA
 
 
+
+
 ###########################
 #look at the histograms for T cells and Monocytes
 ###########################
 
 #first extract the barcodes
-sel = d$seurat_clusters == 0 | d$seurat_clusters == 1 | d$seurat_clusters == 2 | d$seurat_clusters == 5
+sel = d$seurat_clusters == 0 | d$seurat_clusters == 1 | d$seurat_clusters == 2 | d$seurat_clusters == 6 | d$seurat_clusters == 7
 tcellBarcodes = colnames(gn10x)[sel]
-sel = d$seurat_clusters == 3 | d$seurat_clusters == 6
+sel = d$seurat_clusters == 3 | d$seurat_clusters == 5
 monoBarcodes = colnames(gn10x)[sel]
 
 #load the bug
@@ -209,7 +250,6 @@ numTTotMolecules = nrow(bug[bug$barcode %in% tcellBarcodes,])
 numMTotMolecules = nrow(bug[bug$barcode %in% monoBarcodes,])
 numTTotCounts = sum(bug[bug$barcode %in% tcellBarcodes,]$count)
 numMTotCounts = sum(bug[bug$barcode %in% monoBarcodes,]$count)
-
 
 
 ht = hist(tCounts, breaks=seq(0.5, hend+0.5, by=1), plot = FALSE)$counts
@@ -241,6 +281,26 @@ pC = ggplot(dsPlot,aes(x=x,y=y)) +
   )
 pC
 
+#Investigate the cluster T4 histogram - it does look a bit odd
+#sel = d$seurat_clusters == 6
+#tcell4Barcodes = colnames(gn10x)[sel]
+#t4Counts = bug[(bug$barcode %in% tcell4Barcodes) & (bug$gene == "ALDH2"),]$count
+#numT4TotMolecules = nrow(bug[bug$barcode %in% tcell4Barcodes,])
+#numT4TotCounts = sum(bug[bug$barcode %in% tcell4Barcodes,]$count)
+#ht4 = hist(t4Counts, breaks=seq(0.5, hend+0.5, by=1), plot = FALSE)$counts
+#ht4Scaled = ht4/numT4TotMolecules * 10^6
+#dsPlot = data.frame(x = 1:hend, y = ht4Scaled)
+#ggplot(dsPlot,aes(x=x,y=y)) +
+#  geom_bar(stat="identity", fill = colors[2]) +
+#  labs(y="CPM", x="Counts per UMI", title="ALDH2, T4") +
+#  ylim(0,50) +
+#  theme(panel.background = element_rect("white", "white", 0, 
+#                                        0, "white"),
+#        plot.title = element_text(face = "bold")
+#  )
+
+
+
 #calculate CPM of raw counts
 tRawCountsTPM = sum(tCounts) * 10^6/numTTotCounts #7.13283
 mRawCountsTPM = sum(mCounts) * 10^6/numMTotCounts #196.5003
@@ -248,49 +308,49 @@ mRawCountsTPM = sum(mCounts) * 10^6/numMTotCounts #196.5003
 ############################
 ## Now investigate ALDH2 in Smart-Seq2 data
 ############################
-scEvSm2List = ReadKallistoSm2TxMatrix(paste0(dataPath, "EVALPBMC/bus_output/transcripts_to_genes.txt"),
-                                      "E:/Butterfly/EVALPBMC/bulk/PBMC1/abundance.tsv", EVALPBMC_SM2_path)
-countsMatrix = scEvSm2List[[1]]
-tpmMatrix = scEvSm2List[[2]]
+#scEvSm2List = ReadKallistoSm2TxMatrix(paste0(dataPath, "EVALPBMC/bus_output/transcripts_to_genes.txt"),
+#                                      "E:/Butterfly/EVALPBMC/bulk/PBMC1/abundance.tsv", EVALPBMC_SM2_path)
+#countsMatrix = scEvSm2List[[1]]
+#tpmMatrix = scEvSm2List[[2]]
 
 #filter out zero genes
-countsMatrix = countsMatrix[rowSums(countsMatrix) != 0,]
-tpmMatrix = tpmMatrix[rowSums(tpmMatrix) != 0,]
-dim(countsMatrix)
+#countsMatrix = countsMatrix[rowSums(countsMatrix) != 0,]
+#tpmMatrix = tpmMatrix[rowSums(tpmMatrix) != 0,]
+#dim(countsMatrix)
 
 #run through Seurat
-library(Seurat)
-set.seed(1)
+#library(Seurat)
+#set.seed(1)
 
-d = CreateSeuratObject(counts = tpmMatrix, project = "sm2", min.cells = 0, min.features = 0)
+#d = CreateSeuratObject(counts = tpmMatrix, project = "sm2", min.cells = 0, min.features = 0)
 
 #create variable for mitochondrial count fraction
 #d[["percent.mt"]] <- PercentageFeatureSet(d, pattern = "^MT-")
 
 #library size normalization + change to log scale
-d <- NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 10000)
+#d <- NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 10000)
 
 #Finds the most variable genes (takes a few minutes to run)
-d <- FindVariableFeatures(d, selection.method = "vst", nfeatures = 2000)
+#d <- FindVariableFeatures(d, selection.method = "vst", nfeatures = 2000)
 
 
 #Make mean and variance the same for all genes:
-d <- ScaleData(d, features = rownames(d))
+#d <- ScaleData(d, features = rownames(d))
 
 #Principal component analysis
-d <- RunPCA(d, features = VariableFeatures(object = d))
+#d <- RunPCA(d, features = VariableFeatures(object = d))
 
 #do clustering
-d <- FindNeighbors(d, dims = 1:10)
-d <- FindClusters(d, resolution = 0.5)
+#d <- FindNeighbors(d, dims = 1:10)
+#d <- FindClusters(d, resolution = 0.5)
 
 #Generate UMAP map (similar to t-SNE, but usually better)
-d <- RunUMAP(d, dims = 1:10)
+#d <- RunUMAP(d, dims = 1:10)
 
 #show clustering
-DimPlot(d, reduction = "umap")
+#DimPlot(d, reduction = "umap")
 
-sm2Clust = d$seurat_clusters
+#sm2Clust = d$seurat_clusters
 
 #figure out what the clusters are
 #b cells
@@ -301,7 +361,7 @@ sm2Clust = d$seurat_clusters
 #ENST00000566890.1	ENSG00000177455.12	CD19
 #ENST00000567368.1	ENSG00000177455.12	CD19
 #ENST00000538922.5	ENSG00000177455.12	CD19
-FeaturePlot(d, features = c("ENST00000324662.7", "ENST00000565089.5", "ENST00000567541.5", "ENST00000566890.1", "ENST00000567368.1", "ENST00000538922.5")) #_, CD19,
+#FeaturePlot(d, features = c("ENST00000324662.7", "ENST00000565089.5", "ENST00000567541.5", "ENST00000566890.1", "ENST00000567368.1", "ENST00000538922.5")) #_, CD19,
 #so, cluster 3 is B cells
 
 #monocytes
@@ -309,7 +369,7 @@ FeaturePlot(d, features = c("ENST00000324662.7", "ENST00000565089.5", "ENST00000
 #ENST00000549690.1	ENSG00000090382.6	LYZ
 #ENST00000548839.1	ENSG00000090382.6	LYZ
 
-FeaturePlot(d, features = c("ENST00000261267.6", "ENST00000549690.1", "ENST00000548839.1"))
+#FeaturePlot(d, features = c("ENST00000261267.6", "ENST00000549690.1", "ENST00000548839.1"))
 #cluster 1 is monocytes
 
 
@@ -320,7 +380,7 @@ FeaturePlot(d, features = c("ENST00000261267.6", "ENST00000549690.1", "ENST00000
 #ENST00000392884.2	ENSG00000167286.9	CD3D
 #ENST00000526561.1	ENSG00000167286.9	CD3D
 
-FeaturePlot(d, features = c("ENST00000300692.8", "ENST00000534687.5", "ENST00000529594.5", "ENST00000392884.2", "ENST00000526561.1"))
+#FeaturePlot(d, features = c("ENST00000300692.8", "ENST00000534687.5", "ENST00000529594.5", "ENST00000392884.2", "ENST00000526561.1"))
 #cluster 0 is t cells
 
 
@@ -330,25 +390,25 @@ FeaturePlot(d, features = c("ENST00000300692.8", "ENST00000534687.5", "ENST00000
 #ENST00000548536.1	ENSG00000111275.12	ALDH2
 #ENST00000549106.1	ENSG00000111275.12	ALDH2
 #ENST00000551450.1	ENSG00000111275.12	ALDH2
-FeaturePlot(d, features = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1"))
+#FeaturePlot(d, features = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1"))
 
 #ok, so we are interested in comparing the T cells and monocytes
-monoPooled = rowMeans(tpmMatrix[,sm2Clust == 1])
-tPooled = rowMeans(tpmMatrix[,sm2Clust == 0])
+#monoPooled = rowMeans(tpmMatrix[,sm2Clust == 1])
+#tPooled = rowMeans(tpmMatrix[,sm2Clust == 0])
 
 #TPM them again just to be safe
-monoPooled = monoPooled*10^6/sum(monoPooled)
-tPooled = tPooled*10^6/sum(tPooled)
+#monoPooled = monoPooled*10^6/sum(monoPooled)
+#tPooled = tPooled*10^6/sum(tPooled)
 
-ALDH2Transcr = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1")
+#ALDH2Transcr = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1")
 
-monoPooledFilt = monoPooled[names(monoPooled) %in% ALDH2Transcr]
-tPooledFilt = tPooled[names(tPooled) %in% ALDH2Transcr]
+#monoPooledFilt = monoPooled[names(monoPooled) %in% ALDH2Transcr]
+#tPooledFilt = tPooled[names(tPooled) %in% ALDH2Transcr]
 #The gene expression matches reasonably between smart-seq2 and raw counts
-sum(monoPooledFilt) #298.4646
-mRawCountsTPM #196.5003
-sum(tPooledFilt) #5.049317
-tRawCountsTPM #7.13283
+#sum(monoPooledFilt) #298.4646
+#mRawCountsTPM #196.5003
+#sum(tPooledFilt) #5.049317
+#tRawCountsTPM #7.13283
 
 #ENST00000551450.1 seems to be a good candidate for the lowly copied transcript. Can we estimate this using the 10X bug?
 
@@ -372,6 +432,7 @@ for (i in 1:nrow(cuForVariableGenes)) {
 }
 
 fit = lm(scLogExpr~cu)
+summary(fit)# p-value: < 2.2e-16, F-Test
 
 dsPlot = tibble(x=cu, y=scLogExpr)
 dsText = tibble(x=1, y=10)
@@ -397,11 +458,11 @@ pE
 
 dsid = "EVALPBMC"
 loadBug(dsid, "ENS")
-bugEns = getBug(dsid,"ENS")
+bug = getBug(dsid)
 
 #first filter on the genes in the plot to make the bug smaller
 genes = rownames(cuForVariableGenes)
-bugFilt1 = bugEns[bugEns$gene %in% genes,]
+bugFilt1 = bug[bug$gene %in% genes,]
 
 predDS = UMIsForVariableGenes #just allocate the right size
 predDS[,] = NA
@@ -451,34 +512,37 @@ predFiltDS = predDS[,colSums(!is.na(predDS)) != 0]
 predLogDS = predFiltDS;
 #scale to the same number of average counts per cluster as before
 colSumsData = TPMsForVariableGenes
-colSumsData[is.na(predFilt)] = NA
-scaleSize = mean(colSums(colSumsData,na.rm=TRUE))
+colSumsData[is.na(predFiltZTNB)] = NA
+scaleSizeZTNB = mean(colSums(colSumsData,na.rm=TRUE))
+colSumsData = TPMsForVariableGenes
+colSumsData[is.na(predFiltDS)] = NA
+scaleSizeDS = mean(colSums(colSumsData,na.rm=TRUE))
 
 
 for (i in 1:ncol(predFiltZTNB)) {
-  TPMish = predFiltZTNB[,i]*scaleSize/sum(predFiltZTNB, na.rm = TRUE)
+  TPMish = predFiltZTNB[,i]*scaleSizeZTNB/sum(predFiltZTNB, na.rm = TRUE)
   predLogZTNB[,i] = log2(TPMish + 1)
-  TPMish = predFiltDS[,i]*scaleSize/sum(predFiltDS, na.rm = TRUE)
+  TPMish = predFiltDS[,i]*scaleSizeDS/sum(predFiltDS, na.rm = TRUE)
   predLogDS[,i] = log2(TPMish + 1)
 }
 
 #use DS in main figure
 
 #Get the average TPM per cluster before prediction
-sumTPMBefore = sum(TPMsForVariableGenes[rownames(TPMsForVariableGenes) == "ENSG00000111275.12",])
+sumTPMBefore = sum(TPMsForVariableGenes[rownames(TPMsForVariableGenes) == "ALDH2",])
 
-geneSel = rownames(predFiltDS) == "ENSG00000111275.12" #ALDH2
+geneSel = rownames(predFiltDS) == "ALDH2" #ALDH2
 cu = cuForVariableGenes[geneSel,]
 pseudoTPM = predFiltDS[geneSel,] * sumTPMBefore/sum(predFiltDS[geneSel,])
 logExpr = log2(pseudoTPM + 1)
 fit = lm(logExpr~cu)
+summary(fit)
 
-dsPlot = tibble(x=cu, y=logExpr, col=c(colors[1],colors[1],colors[1],colors[2],"#000000",colors[1],colors[2]))
+dsPlot = tibble(x=cu, y=logExpr, col=c(colors[1],colors[1],colors[1],colors[2],"#000000",colors[2],colors[1],colors[1]))
 dsText = tibble(x=cu + 0.2, y=logExpr)
 #fix the texts a bit so they are visible and don't overlap
-dsText$x[7] = dsText$x[7] - 1.5
-dsText$y[2] = dsText$y[2] - 0.05
-dsText$y[3] = dsText$y[3] + 0.05
+dsText$x[6] = dsText$x[6] - 1.5
+dsText$y[1] = dsText$y[1] - 0.1
 
 pD = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   ggplot2::geom_point(ggplot2::aes(x=x,y=y), color=dsPlot$col, shape=1, size=1) +
@@ -512,6 +576,7 @@ for (i in 1:nrow(cuForVariableGenes)) {
 }
 
 fit = lm(scLogExpr~cu)
+summary(fit)#p = 5.111e-09, F-Test
 dsPlot = tibble(x=cu, y=scLogExpr)
 dsText = tibble(x=1, y=10)
 
@@ -552,6 +617,7 @@ for (i in 1:nrow(cuForVariableGenes)) {
 }
 
 fit = lm(scLogExpr~cu)
+summary(fit)#p=0.4397, F-Test
 dsPlot = tibble(x=cu, y=scLogExpr)
 dsText = tibble(x=1, y=10)
 

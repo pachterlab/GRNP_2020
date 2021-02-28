@@ -51,6 +51,46 @@ upSampleAndGetMeanExprPreSeqZTNB <- function(bugFile, t, incTol = 1e-5, iterIncT
   return(res)
 }
 
+#t can be a vector, it is the prediction range (i.e. 2 means predict to the double amount of reads)
+upSampleAndGetMeanExprPreSeqDs <- function(bugFile, t, mt=2) {
+  
+  collapsed = bugFile %>% group_by(gene) %>% do(countslist=c(.$count))#if you get an error here, you probably defined a variable called "c"...
+  
+  numGenes = dim(collapsed)[1]
+  
+  estTotCounts = matrix(data=0,nrow=numGenes,ncol=length(t))
+  
+  print(paste0("Genes: ",numGenes))
+  
+  
+  for (i in 1:numGenes) {
+    h = hist(collapsed[[2]][[i]], breaks=seq(0.5, max(collapsed[[2]][[i]])+0.5, by=1), plot = F)
+    freq = h$mids
+    counts = h$counts
+    added = 0
+    #preseq cannot handle if we have only ones, so modify the histogram slightly
+    if ((length(freq)==1) & (freq[1] == 1)) {
+      added = 2
+      freq = c(1,2)
+      counts = c(counts[1]+1,1)#room for improvement here
+    }
+    dd = as.matrix(data.frame(freq,counts));
+    rSAC = ds.rSAC(dd, mt=mt)
+    newCounts = rSAC(t)
+    newCounts[newCounts < 0] = 0
+    if ((i %% 1000) == 0) {
+      print(i)
+    }
+    estTotCounts[i,] = newCounts - added;
+  }
+  
+  #annoying conversion, can probably be done smarter
+  nms = c("gene",paste0("p",t))
+  colnames(estTotCounts) = nms[2:length(nms)]
+  res = bind_cols(tibble(gene=collapsed$gene), as_tibble(estTotCounts))
+  return(res)
+}
+
 
 #predicts filling in lowly expressed genes from other datasets
 poolPrediction <- function(bugFile, t=10, poolHistList, usePoolLimit = 100) {

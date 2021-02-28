@@ -18,6 +18,9 @@ createStandardBugsData(paste0(dataPath,"EVALPBMCDropseq/"), "EVALPBMC_DS", c(0.0
 #createStandardBugsData(paste0(dataPath,"EVALPBMC_CELSeq2/"), "EVALPBMC_CS", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 200)
 createStandardBugsData(paste0(dataPath,"EVALPBMC_SeqWell/"), "EVALPBMC_SW", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 200)
 createStandardBugsData(paste0(dataPath,"lc/"), "LC", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 1000)#large dataset, need to discard at a different level here
+createStandardBugsData(paste0(dataPath,"LC_B1/"), "LC_B1", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 200)
+createStandardBugsData(paste0(dataPath,"LC_B2/"), "LC_B2", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 200)
+createStandardBugsData(paste0(dataPath,"LC_B3/"), "LC_B3", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1), 200)
 createStandardBugsData(paste0(dataPath,"pbmc5kNextGEM/"), "PBMC_NG", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
 createStandardBugsData(paste0(dataPath,"pbmcv3/"), "PBMC_V3", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
 createStandardBugsData(paste0(dataPath,"pbmcv3_2/"), "PBMC_V3_2", c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1))
