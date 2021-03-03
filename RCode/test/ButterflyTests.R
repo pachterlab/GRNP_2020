@@ -1,6 +1,8 @@
 #before anything else, you need to setup paths:
 #for example
 #source("C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/paths.R"))
+#or, 
+#source("C:/Work/R/ButterflyPublicationRepo/GRNP_2020/RCode/pathsPublRepo.R")
 #or, in colab:
 #source("GRNP_2020/RCode/pathsGoogleColab.R")
 
@@ -159,6 +161,29 @@ all(unlist(strsplit(lines[[15]], "\\s+"))[2:4] == c("1,","1,", "1,")) # 2cpy
 all(unlist(strsplit(lines[[16]], "\\s+"))[2:4] == c("0,","4,", "1,")) # >3cpy
 all(unlist(strsplit(lines[[17]], "\\s+"))[2:4] == c("0.2,","0.6,", "0.2,")) # 1cpy frac
 #skip the rest of the frac, it is a trivial calculation and they have a lot of decimals
+
+#TCR0011 - BinomialDownsampling
+#####################################
+
+source(paste0(sourcePath,"BinomialDownsampling.R"))
+
+h1 = c(2043, 664, 438, 345, 223, 117, 32, 6, 1)
+#generate a bug
+numRows = sum(h1)
+cnts = NULL
+for (i in 1:length(h1)) {
+  cnts = c(cnts,rep(i,h1[i]))
+}
+length(cnts) == numRows #OK
+
+bug = tibble(barcode=rep("A", numRows), UMI = as.character(1:numRows), gene="G", count = cnts)
+res = binomialDownsampling(bug, 0.2)
+res2 = res[[2]][[1]]
+lostMol = 0
+for (i in 1:length(h1)) {
+  lostMol = lostMol + (dbinom(0, i, 0.2)*h1[i])
+}
+res2 - (sum(h1) - lostMol) < 10^-5 #OK
 
 
 
