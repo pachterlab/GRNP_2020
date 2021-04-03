@@ -18,6 +18,14 @@ library(ggpubr)
 library(Seurat)
 
 
+#normal values, when not varying the other factors
+#depth = 1 #(default in function, no need to specify that)
+#standard mu is to use the mu distribution mus
+#deFC = 4 #(default in function, no need to specify that)
+standardExpr = 1000;
+
+
+
 #We generate data as negative binomial
 
 #We need to find realistic parameterizations for the negative binomials
@@ -50,7 +58,7 @@ mus = approx(x = FSCMs, y = means, xout = FSCMsV3, method = "linear", yleft=min(
 #This is how the linear interpolation is done
 #newMeans = approx(x = FSCMs, y = means, xout = c(0.1, 0.5, 0.8), method = "linear")
 #9.018959 1.000000 0.250000
-#test
+#Test 1
 #calcFSCM(0.25) #0.8, ok
 
 #For each gene expression level, we generate pairs of genes with randomly selected amplification + some noise
@@ -59,7 +67,6 @@ mus = approx(x = FSCMs, y = means, xout = FSCMsV3, method = "linear", yleft=min(
 
 #returns a histogram and a vector of UMIs per cell
 genGeneData = function(numCells, geneExpr, mu, totMoleculesPerCell=12000) {
-  #m = rep(NA, numCells) #counts across cells
   h = rep(NA, 1000) #histogram, skip the zeros, i.e. starts at 1
   
   totGeneMolPerCell = geneExpr/10^6*totMoleculesPerCell
@@ -77,27 +84,12 @@ genGeneData = function(numCells, geneExpr, mu, totMoleculesPerCell=12000) {
   nonZeroMol = sum(h)
   
   #Generate counts across cells distribution
-  #m = rmultinom(round(nonZeroGeneMolPerCell*numCells), size=numCells, prob= rep(1,numCells))
   x = sample(numCells,nonZeroMol,replace=TRUE)
   m = hist(x, breaks=seq(0.5, numCells+0.5, by=1), plot = F)$counts
 
-  #we could possibly add some randomness to the histogram
-  #...
-  
+
   return(list(m,h))
 }
-
-
-
-
-
-
-
-#for each gene expression level, generate three types of data:
-#1. All genes are equally amplified
-#2. Genes are differently amplified
-#3. Like 2, but with some kind of noise on the histograms
-
 
 #some params for debugging
 numCells = 2000
@@ -112,6 +104,7 @@ doCorrect = TRUE
 trimZeros = function(h) {
   return(h[1:max( which( h != 0 ))])  
 }
+#Test 2
 #trimZeros(c(1,0,2,3,0,1,0,0,0,0))#1 0 2 3 0 1, ok
 
 predZTNB = function(h, t) {
@@ -149,9 +142,7 @@ binomialDowns = function(h, fractionToKeep) {
 #set mus2 to NA if we want to use the same mu for both conditions (can be used for depth calculations for example)
 evaluateCondition = function(geneExpr, mus1, mus2, depth1 = 1, depth2 = 1, DEExprFactor = 4, numCells = 5000, numGenes = 500, fractionDE = 0.5, useBinDowns = FALSE, minLFC = 0.25) {
   geneExpr2 = geneExpr * DEExprFactor
-  #extraGenes = 500 #highly expressed genes for DESeq - only needed in the geMatrix
-  extraGenes = 0
-  
+
   print("Generating data...")
   
   #randomize which genes should be DE - place the first half in the first group, the other half in the other, no overlaps
@@ -168,9 +159,9 @@ evaluateCondition = function(geneExpr, mus1, mus2, depth1 = 1, depth2 = 1, DEExp
   ge2[isDE2] = geneExpr2
   
   #the first numCells cells is the first group, the next numCells is the other group
-  geMatrix = matrix(nrow=numGenes + extraGenes, ncol=numCells*2)
+  geMatrix = matrix(nrow=numGenes, ncol=numCells*2)
   colnames(geMatrix) = as.character(1:(2*numCells))
-  rownames(geMatrix) = as.character(1:(numGenes + extraGenes))
+  rownames(geMatrix) = as.character(1:(numGenes))
   
   histGroup1 = matrix(nrow=numGenes, ncol=1000)
   histGroup2 = matrix(nrow=numGenes, ncol=1000)
@@ -196,12 +187,7 @@ evaluateCondition = function(geneExpr, mus1, mus2, depth1 = 1, depth2 = 1, DEExp
     histGroup2[i,] = lst2[[2]]
   }
 
-  #add extra genes with reasonably high expression - it is needed for the DE calculations if the other genes are very lowly expressed
-#  for (i in (numGenes+1):(numGenes+extraGenes)) {
-#    lst = genGeneData(numCells*2, 500, 10) #just use a fixed mu here
-#    geMatrix[i,1:(numCells*2)] = lst[[1]]
-#  }
-  
+
   corrMatrix = geMatrix
   
   #Predict using ZTNB
@@ -263,63 +249,50 @@ evaluateCondition = function(geneExpr, mus1, mus2, depth1 = 1, depth2 = 1, DEExp
   corrMatrix[1:numGenes, (1:numCells)+numCells] = corrMatrix[1:numGenes, (1:numCells)+numCells] * secFactor
   
   
-  #do DE-analysis using DESeq2
-  #Use Seurat
 
-  #Uncorrected
-  ##################
-#  print("Running DE uncorrected...")
-#  d = CreateSeuratObject(counts = geMatrix, project = "DE", min.cells = 0, min.features = 0)
-#  d = NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 10000)
-#  d = ScaleData(d, features = rownames(d))
-  
-#  d = SetIdent(d,value=meta$group)
-  
-#  deMarkers = FindMarkers(d, ident.1 = "0", ident.2 = "1", min.cells.feature = 0, logfc.threshold = -10, min.cells.group = 0, min.pct = 0)
-#  dim(deMarkers)
-#  srt = sort(as.numeric(rownames(deMarkers)), index.return = TRUE)
-#  deMarkersSort = deMarkers[srt$ix,][1:numGenes,]
-#  deOutput = (deMarkersSort$p_val_adj <= 0.05) & (abs(deMarkersSort$avg_logFC) >= minLFC)
-  
-#  falsePosUnc = deOutput & !isDE
-#  falseNegUnc = (!deOutput) & isDE
-  
   #extract fold changes for false positives and false negatives
-  #lfcUnc = deMarkersSort$avg_logFC
   lfcUnc = log2(rowSums(geMatrix[1:numGenes,1:numCells])/rowSums(geMatrix[1:numGenes,((1:numCells) + numCells)]))
   
-  #Corrected
-  ##################
-#  print("Running DE corrected...")
-#  d = CreateSeuratObject(counts = corrMatrix, project = "DE", min.cells = 0, min.features = 0)
-#  d = NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 10000)
-#  d = ScaleData(d, features = rownames(d))
-#  
-#  d = SetIdent(d,value=meta$group)
-#  
-#  deMarkers = FindMarkers(d, ident.1 = "0", ident.2 = "1", min.cells.feature = 0, logfc.threshold = -10, min.cells.group = 0, min.pct = 0)
-#  dim(deMarkers)
-#  srt = sort(as.numeric(rownames(deMarkers)), index.return = TRUE)
-#  deMarkersSort = deMarkers[srt$ix,][1:numGenes,]
-#  deOutput = (deMarkersSort$p_val_adj <= 0.05) & (abs(deMarkersSort$avg_logFC) >= minLFC)
-  
-#  falsePosCorr = deOutput & !isDE
-#  falseNegCorr = (!deOutput) & isDE
-  
+
   #extract fold changes for false positives and false negatives
-  #lfcCorr = deMarkersSort$avg_logFC
   lfcCorr = log2(rowSums(corrMatrix[1:numGenes,1:numCells])/rowSums(corrMatrix[1:numGenes,((1:numCells) + numCells)]))
 
-#  return(list(sum(falsePosUnc), sum(falseNegUnc), sum(falsePosCorr), sum(falseNegCorr), isDE, lfcUnc, lfcCorr))
   return(list(isDE, lfcUnc, lfcCorr))
 }
 
-#Tests
-#1: Test LFCs for depth
-#res = evaluateCondition(standardExpr, mus1=c(1,0.25), mus2=NA, depth2 = 0.5, useBinDowns = TRUE, DEExprFactor = 2, numGenes=500)
-#expr1 = dnbinom(0, mu=1, size=1)
-#expr2 = dnbinom(0, mu=0.5, size=1)
+#Test 2 - Test LFCs for depth
+#No depth difference, should give clear answers
+res = evaluateCondition(standardExpr, mus1=c(1,0.25), mus2=NA, depth2 = 1, useBinDowns = TRUE, DEExprFactor = 2, numGenes=500)
+hist(res[[2]]) #should produce 3 spikes, at -1, 0, and 1, where 0 is twice as high, which it does, so ok
 
+#now, with depth difference
+res = evaluateCondition(standardExpr, mus1=c(5,0.1), mus2=NA, depth2 = 0.1, useBinDowns = TRUE, DEExprFactor = 2, numGenes=500)
+#calc possible outcomes
+expr1 = 1-dnbinom(0, mu=5, size=1) #0.8333333
+expr2 = 1-dnbinom(0, mu=0.5, size=1) #0.3333333
+expr3 = 1-dnbinom(0, mu=0.1, size=1) #0.09090909
+expr4 = 1-dnbinom(0, mu=0.01, size=1) #0.00990099
+scaleBef = (expr1 + expr3)/2
+scaleAft = (expr2 + expr4)/2
+#left side of pair
+normExpr5 = expr1/scaleBef #1.803279
+normExpr0_1 = expr3/scaleBef #0.1967213
+#right side of pair
+normExpr0_5 = expr2/scaleAft #1.942308
+normExpr0_01 = expr4/scaleAft #0.05769231
+
+#it results in two cases:
+LFCHighCopy = log2(normExpr5/normExpr0_5) #-0.1071494
+LFCLowCopy = log2(normExpr0_1/normExpr0_01) #1.769702
+#total expected: -1.11, -0.11, 0.77, 0.89, 1.77, 2.77
+plot(density(res[[2]], adjust=0.1)) #looks good, spikes at the right positions
+
+#now, with no DE (DE tested above) but different mus for left and right
+res = evaluateCondition(standardExpr, mus1=c(5,0.1), mus2=c(5,0.1), useBinDowns = FALSE, DEExprFactor = 1, numGenes=500)
+#expected results are 
+logDEFromSat = log2(normExpr5/normExpr0_1)#3.196397
+#so, we would expect 25% -3.20, 50% 0 and 25% + 3.20
+hist(res[[2]])#looks reasonable
 
 
 
@@ -332,12 +305,6 @@ evaluateCondition = function(geneExpr, mus1, mus2, depth1 = 1, depth2 = 1, DEExp
 
 set.seed(1)
 
-#normal values, when not varying the other factors
-#depth = 1 #(default in function, no need to specify that)
-#standard mu is to use the mu distribution mus
-#deFC = 4 #(default in function, no need to specify that)
-standardExpr = 1000;
-
 
 #############################
 # Depth
@@ -345,12 +312,6 @@ standardExpr = 1000;
 
 #We set the depth2 parameter
 depths = 2^((-5):5) #5 is about the limit before the histograms starts to get truncated because of the limited length of the histograms
-#depths = 2^((-1):1)
-#depths = 2^5
-#depthFPUnc = rep(NA,length(depths))
-#depthFNUnc = rep(NA,length(depths))
-#depthFPCorr = rep(NA,length(depths))
-#depthFNCorr = rep(NA,length(depths))
 depthDE = list()
 depthFCUnc = list()
 depthFCCorr = list()
@@ -358,10 +319,6 @@ depthFCCorr = list()
 for(i in 1:length(depths)) {
   print(paste0(i, " of ", length(depths)))
   res = evaluateCondition(standardExpr, mus1=mus, mus2=NA, depth2 = depths[i], useBinDowns = TRUE, DEExprFactor = 2, numGenes=5000)
-#  depthFPUnc[i] = res[[1]]
-#  depthFNUnc[i] = res[[2]]
-#  depthFPCorr[i] = res[[3]]
-#  depthFNCorr[i] = res[[4]]
   depthDE = c(depthDE, list(res[[1]]))
   depthFCUnc = c(depthFCUnc, list(res[[2]]))
   depthFCCorr = c(depthFCCorr, list(res[[3]]))
@@ -407,10 +364,6 @@ saveRDS(muData, file =paste0(figure_data_path, "simMuData.RDS"))
 #############################
 
 fcs = 2^(seq(0.5,3,by=(0.5)))
-#fcFPUnc = rep(NA,length(fcs))
-#fcFNUnc = rep(NA,length(fcs))
-#fcFPCorr = rep(NA,length(fcs))
-#fcFNCorr = rep(NA,length(fcs))
 fcDE = list()
 fcFCUnc = list()
 fcFCCorr = list()
@@ -418,10 +371,6 @@ fcFCCorr = list()
 for(i in 1:length(fcs)) {
   print(paste0(i, " of ", length(fcs)))
   res = evaluateCondition(standardExpr, mus1=mus, mus2=mus, DEExprFactor = fcs[i], numGenes=5000)
-#  fcFPUnc[i] = res[[1]]
-#  fcFNUnc[i] = res[[2]]
-#  fcFPCorr[i] = res[[3]]
-#  fcFNCorr[i] = res[[4]]
   fcDE = c(fcDE, list(res[[1]]))
   fcFCUnc = c(fcFCUnc, list(res[[2]]))
   fcFCCorr = c(fcFCCorr, list(res[[3]]))
@@ -437,10 +386,6 @@ saveRDS(fcData, file =paste0(figure_data_path, "simFcData.RDS"))
 #############################
 
 gexs = 2^(2:13)
-#gexFPUnc = rep(NA,length(gexs))
-#gexFNUnc = rep(NA,length(gexs))
-#gexFPCorr = rep(NA,length(gexs))
-#gexFNCorr = rep(NA,length(gexs))
 gexDE = list()
 gexFCUnc = list()
 gexFCCorr = list()
@@ -448,10 +393,6 @@ gexFCCorr = list()
 for(i in 1:length(gexs)) {
   print(paste0(i, " of ", length(gexs)))
   res = evaluateCondition(gexs[i], mus1=mus, mus2=mus, DEExprFactor = 2, numGenes=5000)
-#  gexFPUnc[i] = res[[1]]
-#  gexFNUnc[i] = res[[2]]
-#  gexFPCorr[i] = res[[3]]
-#  gexFNCorr[i] = res[[4]]
   gexDE = c(gexDE, list(res[[1]]))
   gexFCUnc = c(gexFCUnc, list(res[[2]]))
   gexFCCorr = c(gexFCCorr, list(res[[3]]))
@@ -478,12 +419,6 @@ countsPerCell = 12000*avgGeneCounts/expGeneCounts #7395.409
 
 sizeFac = 1000*length(mus)/10^6
 sum(expr)
-
-
-
-#evaluateCondition(10, mus1=mus, mus2=mus)
-#evaluateCondition(100, mus1=mus, mus2=mus)
-
 
 
 mean(genGeneData(500, 1000, 0.125)[[1]])

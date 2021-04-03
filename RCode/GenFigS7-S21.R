@@ -12,7 +12,7 @@ library("ggpubr")
 library(tictoc)
 
 #############################
-# Create fig S7 - S20
+# Create fig S8 - S21
 #############################
 
 PlotEvaluationForDS <- function(dsid) {
@@ -78,8 +78,6 @@ PlotEvaluationForDS <- function(dsid) {
   lfc_scaled = log2((predscaled/sum(predscaled))/(fullUMIs/sum(fullUMIs)))
   
 
-  
-  #Fig 3_2-3_5
   
   dfplot = data.frame(x=logumis, y=lfc_ds_2)
   dfline = data.frame(x=c(0,max(logumis)), y=c(0,0))
@@ -204,7 +202,7 @@ PlotEvaluationForDS("MRET2")
 PlotEvaluationForDS("MARSSEQ")
 
 #############################
-# Create fig S6
+# Create fig S7
 #############################
 
 
@@ -283,7 +281,7 @@ colors = gg_color_hue(6);#make sure to get the same colors in all plots
   
 
 
-#Fig S6 B
+#Fig S7 B
 #Relative error as a function of number of UMIs per gene, for all datasets combined
 ######################################################################
 
@@ -426,7 +424,7 @@ figMult = ggarrange(p3_7, p3_6, nrow=1, ncol=2, labels=c("A","B"))
 figS1All = figMult
 figS1All
 ggsave(
-  paste0(figure_path, "FigS6.png"),
+  paste0(figure_path, "FigS7.png"),
   plot = figS1All, device = "png",
   width = 6, height = 4, dpi = 300)
 

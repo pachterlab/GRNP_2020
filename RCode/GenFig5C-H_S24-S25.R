@@ -29,9 +29,6 @@ colors = gg_color_hue(2)
 # Load data
 ########################
 
-
-#Seurat cannot handle the tx data
-#So, cluster on gene data instead, it doesn't really matter
 gn10x = read_count_output(dir=paste0(dataPath, "EVALPBMC/bus_output/genecounts"), "output", tcc=FALSE)
 countsPerCell = sparse_Sums(gn10x)
 gn10x = gn10x[,countsPerCell > 200]
@@ -74,7 +71,6 @@ d <- NormalizeData(d, normalization.method = "LogNormalize", scale.factor = 1000
 #Finds the most variable genes
 d <- FindVariableFeatures(d, selection.method = "vst", nfeatures = 2000)
 
-
 #Make mean and variance the same for all genes:
 d <- ScaleData(d, features = rownames(d))
 
@@ -90,35 +86,29 @@ d <- RunUMAP(d, dims = 1:10)
 
 clust = d$seurat_clusters
 
-d2 = subset(d, seurat_clusters == 0 | seurat_clusters == 1 | seurat_clusters == 2 | seurat_clusters == 6  | seurat_clusters == 7 )
-DimPlot(d2, reduction = "umap")
-d2 = subset(d, seurat_clusters == 3 | seurat_clusters == 5 )
-DimPlot(d2, reduction = "umap")
-d2 = subset(d, seurat_clusters == 4)
-DimPlot(d2, reduction = "umap")
 
-sum(clust == 7)#check number of cells in cluster 7: 397
-
-#d = RenameIdents(object = d, `0` = "T1", `1` = "T2", `2` = "T3", `3` = "M1", `4` = "B", `5` = "T4", `6` = "M2", `7` = "U1", `8` = "U2", `9` = "U3", `10` = "U4",  `11` = "U5")
 d = RenameIdents(object = d, `0` = "T1", `1` = "T2", `2` = "T3", `3` = "M1", `4` = "B", `5` = "M2", `6` = "T4", `7` = "T5", `8` = "U1", `9` = "U2", `10` = "U3",  `11` = "U4")
 
+#Test 1 - make sure we identified the clusters correctly
+d2 = subset(d, seurat_clusters == 0 | seurat_clusters == 1 | seurat_clusters == 2 | seurat_clusters == 6  | seurat_clusters == 7 ) #T/NK cells
+DimPlot(d2, reduction = "umap")
+d2 = subset(d, seurat_clusters == 3 | seurat_clusters == 5 ) #Monocytes
+DimPlot(d2, reduction = "umap")
+d2 = subset(d, seurat_clusters == 4) #B cells
+DimPlot(d2, reduction = "umap")
+#Test 2 - Identify the cell types in the clusters
+FeaturePlot(d, c("CD3D", "CD19", "LYZ"))
+            
 
 #show clustering
 pSupA = DimPlot(d, reduction = "umap")
 pSupA
 
-#FeaturePlot(d, features = c("ENST00000416293.7","ENST00000261733.6","ENST00000548536.1","ENST00000549106.1","ENST00000551450.1"))
 
 ggsave(
-  paste0(figure_path, "FigS_Seurat_5C-H.png"),
+  paste0(figure_path, "FigS24.png"),
   plot = pSupA, device = "png",
   width = 4, height = 4, dpi = 300)
-
-
-
-
-
-#calculate counts per UMI
 
 
 
@@ -131,7 +121,7 @@ rownames(cuPerCluster) = rownames(gn10x)
 UMIsPerCluster = matrix(, nrow = nrow(gn10x), ncol = 12) #number of clusters is 12
 rownames(UMIsPerCluster) = rownames(gn10x)
 cellsPerCluster = rep(NA,12)
-clusterNames = c("T1","T2","T3","M1","B","M2","T4","T5","U1","U2","U3","U4") 
+clusterNames = c("T1","T2","T3","M1","B","M2","T4","T5","U1","U2","U3","U4") #compared manually with id setting above
 colnames(cuPerCluster) = clusterNames
 colnames(UMIsPerCluster) = clusterNames
 
@@ -152,7 +142,7 @@ for (i in 1:12) {
   colnames(res) = c("x","y")
   cuPerCluster[,i] = lookup(rownames(cuPerCluster), res)
 }
-#test ()
+#test 3
 #sel = d$seurat_clusters == 0
 #barcodes = colnames(gn10x)[sel]#814 long, reasonable
 #subBug = bug[(bug$barcode %in% barcodes) & (bug$gene == "AACS"),]
@@ -304,7 +294,6 @@ pG = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
-        #legend.position= "none",
         plot.title = element_text(face = "bold"),
         strip.background = element_blank())
 pG
@@ -410,14 +399,15 @@ pF = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
         legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
         strip.text.x = element_text(size = 12, face = "bold"),
         plot.title = element_text(face = "bold"),
-        #legend.position= "none",
         strip.background = element_blank())
 pF
 
 
 
 
-#test for all variable genes
+##############################
+#Plot all variable genes, now corrected
+##############################
 
 #first scale all genes to the same scale (sum of 1000)
 scaled = predFiltDS*1000/rowSums(predFiltDS, na.rm=TRUE)
@@ -492,7 +482,7 @@ pSup2 = ggplot2::ggplot(dsPlot,ggplot2::aes(x=x,y=y)) +
 pSup2
 
 ggsave(
-  paste0(figure_path, "FigS_AcrossClustersZTNB_5C-H.png"),
+  paste0(figure_path, "FigS25.png"),
   plot = pSup2, device = "png",
   width = 3, height = 3, dpi = 300)
 

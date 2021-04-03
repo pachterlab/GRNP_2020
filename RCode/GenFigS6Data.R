@@ -1,5 +1,5 @@
 #
-# Generates the data for the plots in Fig. 1
+# Generates the data for the plots in Fig. S6
 #
 
 #before anything else, you need to setup paths:
@@ -30,7 +30,7 @@ library(biomaRt)
 
 
 #get versions
-listMarts()#version 98
+listMarts()#version 103
 ensembl <- useMart("ENSEMBL_MART_ENSEMBL")
 listDatasets(ensembl)
 
@@ -58,7 +58,7 @@ gcContent <- function(x) {
 } 
 
 
-#test TC002 - gcContent
+#test 1 - gcContent
 b = BString("GGCCGA")
 gcContent(b)#should be 5/6 = 0.8333333, ok!
 
@@ -90,8 +90,8 @@ gcsMMergedFilt = gcsMMerged[!is.na(gcsMMerged$gene),]
 #take mean of all transcripts for each gene
 gctl = gcsMMergedFilt %>% group_by(gene) %>% summarize(gc=mean(gc), txlen = mean(tx_len))
 
-#test
-#gcsMMergedFilt[gcsMMergedFilt$gene == "Pbsn",]
+#Test 2 - Test that the mean calculation across groups
+gcsMMergedFilt[gcsMMergedFilt$gene == "Pbsn",]
 #1 ENSMUST00000000003 0.401 137139 Pbsn      7    902
 #2 ENSMUST00000114041 0.396 137140 Pbsn      6    697
 #txlen should be (902+697)/2 = 799.5

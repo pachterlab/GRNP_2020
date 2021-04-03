@@ -58,7 +58,7 @@ ggsave(
 
 
 #########################
-# Fig S22 (Sampling noise)
+# Fig S23 (Sampling noise)
 #########################
 #cpm and log transform
 

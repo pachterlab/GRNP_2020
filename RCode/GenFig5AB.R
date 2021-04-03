@@ -99,7 +99,6 @@ seurObj <- RunPCA(seurObj, features = VariableFeatures(object = seurObj))
 seurObj <- FindNeighbors(seurObj, dims = 1:10)
 seurObj <- FindClusters(seurObj, resolution = 0.5)
 seurObj <- RunUMAP(seurObj, dims = 1:10)
-#DimPlot(seurObj, reduction = "umap", group.by = "ds_source", cols=c("blue", "red"))
 
 FeaturePlot(seurObj, features = c("CD19", "CD8A", "CD3D")) # The clusters are T cells
 
@@ -113,10 +112,6 @@ ggsave(
 
 DimPlot(seurObj, reduction = "umap", group.by = "ds_source", cols=c("blue", "red"))
 
-#seurObj2 = subset(seurObj, subset = seurat_clusters == 0 | seurat_clusters == 3 | seurat_clusters == 5 | seurat_clusters == 6) 
-#seurObj2 = subset(seurObj, subset = seurat_clusters == 0) 
-#DimPlot(seurObj2, reduction = "umap")
-
 clusters = seurObj$seurat_clusters
 
 subsel = clusters == 0 | clusters == 1 | clusters == 4 | clusters == 5 | clusters == 9
@@ -124,7 +119,6 @@ subsel = clusters == 0 | clusters == 1 | clusters == 4 | clusters == 5 | cluster
 seurObj2 = subset(seurObj, seurat_clusters == 0 | seurat_clusters == 1 | seurat_clusters == 4 | seurat_clusters == 5 | seurat_clusters == 9)
 DimPlot(seurObj2, reduction = "umap")
 
-#subsel = seurObj$seurat_clusters == 0
 dsSource = seurObj$ds_source[subsel]
 
 #now the reduced set
@@ -147,7 +141,6 @@ pA = pA + ggtitle("Batch correction - uncorrected")
 pA = pA +   theme(panel.background = element_rect("white", "white", 0, 0, "white"),
                   legend.position= "bottom", legend.direction = "horizontal",#, legend.title = element_blank())
                   strip.text.x = element_text(size = 12, face = "bold"),
-                  #legend.position= "none",
                   plot.title = element_text(size=14, face = "bold"),
                   strip.background = element_blank())
 pA
@@ -156,7 +149,7 @@ pA
 #extract two things for calculations - the UMAP coordinates and the source
 uncorrCoords = seurObj[["umap"]]@cell.embeddings
 uncorrSource = dsSource
-#sum(rownames(uncorrCoords) != names(uncorrSource)) #test, 0, ok
+#sum(rownames(uncorrCoords) != names(uncorrSource)) #test 1, 0, ok
 
 
 #Now, correct by down-sampling NG2 using binomial downsampling
@@ -268,93 +261,6 @@ ggsave(
   plot = fig5AB, device = "png",
   width = 9, height = 5, dpi = 300)
 
-#######################
-#Some experiments
-
-loadStats("PBMC_NG")
-loadStats("PBMC_NG_2")
-s1 = getStats("PBMC_NG")
-s2 = getStats("PBMC_NG_2")
-
-s1sub = s1[,c(1, which(colnames(s1) == "FracOnes_PBMC_NG_d_100" | colnames(s1) == "UMIs_PBMC_NG_d_100" | colnames(s1) == "CPM_PBMC_NG_d_100" ))]
-s1subFilt = s1sub[s1sub[[2]] >= 500, c(1,3,4)]
-s2sub = s2[,c(1, which(colnames(s2) == "FracOnes_PBMC_NG_2_d_40" | colnames(s2) == "UMIs_PBMC_NG_2_d_40" | colnames(s2) == "CPM_PBMC_NG_2_d_40" ))]
-s2subFilt = s2sub[s2sub[[2]] >= 500, c(1,3,4)]
-
-jnd = inner_join(s1subFilt,s2subFilt,by="gene")
-plot(jnd[[3]] ,jnd[[5]])
-
-sort(abs(Loadings(seurObj, reduction = "pca")[, 8]), decreasing = TRUE)[1:200]
-
-genesPC8 = names(sort(abs(Loadings(seurObj, reduction = "pca")[, 8]), decreasing = TRUE)[1:30])
-
-genesFSCMDiff = jnd$gene[abs(jnd[[3]] - jnd[[5]]) > 0.07]
-genesFSCMDiff[genesFSCMDiff %in% genesPC8]
-
-sel2 =jnd$gene %in% genesPC8
-plot(jnd[[3]][sel2] ,jnd[[5]][sel2])
-lines(c(0,1),c(0,1))
-
-sel3 = sample(dim(jnd)[1],30)
-plot(jnd[[3]][sel3] ,jnd[[5]][sel3])
-lines(c(0,1),c(0,1))
-
-#test to predict the genes that differ much in FSCM
-loadBug("PBMC_NG_2")
-bugvNg2 = getBug("PBMC_NG_2")
-cellsNotFiltered = names(dsSource)[dsSource == levels(dsSource)[2]]
-bug2Filt = bugvNg2[bugvNg2$barcode %in% cellsNotFiltered,]
-unPred2 = bug2Filt %>% group_by(gene) %>% summarise(UMIs = n(), CPM = n())
-unPred2$CPM = unPred2$CPM*10^6/sum(unPred2$CPM)
-source(paste0(sourcePath,"preseqHelpers.R"))
-pred2ZTNB = upSampleAndGetMeanExprPreSeqZTNB(bug2Filt, 1000)
-pred2Ds = upSampleAndGetMeanExprPreSeqDs(bug2Filt, 1000, mt=20)
-pred2 = pred2Ds
-predCPM2 = pred2
-predCPM2[[2]] = pred2[[2]]*10^6/sum(pred2[[2]])
-
-loadBug("PBMC_NG")
-bugvNg = getBug("PBMC_NG")
-cellsNotFiltered1 = names(dsSource)[dsSource == levels(dsSource)[1]]
-bugFilt = bugvNg[bugvNg$barcode %in% cellsNotFiltered1,]
-unPred = bugFilt %>% group_by(gene) %>% summarise(UMIs = n(), CPM = n())
-unPred$CPM = unPred$CPM*10^6/sum(unPred$CPM)
-predZTNB = upSampleAndGetMeanExprPreSeqZTNB(bugFilt, 1000/0.45)
-predDs = upSampleAndGetMeanExprPreSeqDs(bugFilt, 1000/0.45, mt=20)
-pred = predDs
-predCPM = pred
-predCPM[[2]] = pred[[2]]*10^6/sum(pred[[2]])
-
-unPredicted = inner_join(unPred,unPred2, by="gene")
-unPredicted[unPredicted$gene %in%  genesPC8,]
-predicted = inner_join(predCPM,predCPM2, by="gene")
-predicted[predicted$gene %in%  genesPC8,]
-
-genesPC8Inter = genesFSCMDiff[genesFSCMDiff %in% genesPC8]
-
-unPredFilt = unPredicted[unPredicted$gene %in% genesPC8Inter,]
-unPredFilt
-predFilt = predicted[predicted$gene %in% genesPC8Inter,]
-predFilt
-
-plotHists = function(b1,b2,gene) {
-  gbug1 = b1[b1$gene == gene,]
-  gbug2 = b2[b2$gene == gene,]
-  hist(gbug1$count, breaks=seq(0.5, max(gbug1$count)+0.5, by=1), main = paste0("b1: ",gene))
-  hist(gbug2$count, breaks=seq(0.5, max(gbug2$count)+0.5, by=1), main = paste0("b2: ",gene))
-}
-plotHists(bugvNg, bugvNg2, "AC010970.1")
-plotHists(bugvNg, bugvNg2, "MTATP6P1")
-plotHists(bugvNg, bugvNg2, "RPL26")
-plotHists(bugvNg, bugvNg2, "RPL7")
-plotHists(bugvNg, bugvNg2, "RPS10")
-plotHists(bugvNg, bugvNg2, "RPS2")
-gbug1 = bugvNg[bugvNg$gene == "AC010970.1",]
-gbug2 = bugvNg2[bugvNg2$gene == "AC010970.1",]
-hist(gbug1$count, breaks=seq(0.5, max(gbug1$count)+0.5, by=1))
-hist(gbug2$count, breaks=seq(0.5, max(gbug2$count)+0.5, by=1))
-
-
 #Calculate the 10 nearest neighbors for each cell
 
 
@@ -376,7 +282,7 @@ getKnnFrac = function(crds, src, numNeighbors) {
 getKnnFrac(uncorrCoords, uncorrSource, 10)#0.8185659
 getKnnFrac(corrCoords, corrSource, 10)#0.6765698
 
-#test case:
+#test case (Test 2):
 #     0 1 2.2
 #0    0 0 0
 #0.9  1 1 0
@@ -387,17 +293,4 @@ testSrc = c(0,0,0,1,1,0,1,1,0,1,1,0)
 expRes = mean(c(0.5, 0.5, 1, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 0.5))
 res = getKnnFrac(testCoords, testSrc, 2)
 expRes - res < 0.0000001 #ok
-
-
-
-################
-# test the binomial downsampling function
-#################
-
-#loadBug("PBMC_V3_3")
-#bugv3_3 = getBug("PBMC_V3_3")
-#bug = bugv3_3
-#t = 0.1
-#ds = binomialDownsampling(bug, c(0.1,0.5))
-
 
