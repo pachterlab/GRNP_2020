@@ -82,7 +82,7 @@ figS23 = ggplot(plotdata2) +
         #legend.position= "none",
         strip.background = element_blank())
 
-figS23 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
+figS23 # for some reason this plot sometimes fails and show an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(

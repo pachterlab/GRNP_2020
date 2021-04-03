@@ -141,10 +141,3 @@ loadPooledHistogram("PBMC_V2")
 loadPooledHistogram("EVALPBMC")
 
 
-#generate downsampling 20 times of PBMCV3_3 - to enable comparison with sampling noise
-loadBug("PBMC_V3_3", 1)
-PBMC_V3_3_ds10_20Times = downSampleBUGNTimes(getBug("PBMC_V3_3", 1), 0.1, 20)
-save(PBMC_V3_3_ds10_20Times, file=paste0(figure_data_path, "PBMC_V3_3_ds10_20Times.RData"))
-rmBug("PBMC_V3_3")
-
-
