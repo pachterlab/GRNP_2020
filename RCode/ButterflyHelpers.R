@@ -81,12 +81,18 @@ downSampleBUG <- function(bug, fractionToKeep) {
   borders = c(0.5,cumsum(bug$count) + 0.5)
   print("5")
   newCounts = hist(indices, borders, plot=F)
+  #save some memory
+  rm(borders)
+  rm(indices)
   print("6")
   sel = newCounts$count != 0
+  newCountsSel = newCounts$count[sel]
+  rm(newCounts)
+  gc()
   print("7")
   bugDS = bug[sel,]
   print("8")
-  bugDS$count = newCounts$count[sel]
+  bugDS$count = newCountsSel
   print("9")
   return(bugDS)
 }
