@@ -36,7 +36,7 @@ dfline = data.frame(x=c(0,16), y=c(0,0))
 
 dummyData = data.frame(x=c(0,0), y=c(1.1, -1.5)) #used in a trick to set y axis range below
 
-fig3 = ggplot(plotdata.m) +
+fig4AC = ggplot(plotdata.m) +
   stat_binhex(bins=60,na.rm = TRUE, mapping=aes(x = x, y=value, fill = log(..count..))) + # opts(aspect.ratio = 1) +
   facet_wrap(facets = ~  variable, scales = "free_x", labeller = labl, ncol=3) +
   geom_line(data=dfline, mapping = aes(x=x, y=y), color="black", size=1) + 
@@ -48,12 +48,12 @@ fig3 = ggplot(plotdata.m) +
         #legend.position= "none",
         strip.background = element_blank())
 
-fig3 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
+fig4AC # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(
-  paste0(figure_path, "Fig3.png"),
-  plot = fig3, device = "png",
+  paste0(figure_path, "Fig4AC.png"),
+  plot = fig4AC, device = "png",
   width = 7, height = 4, dpi = 300)
 
 
@@ -70,7 +70,7 @@ plotdata2 = tibble(gene=ldata2$gene,
 dfline = data.frame(x=c(0,16), y=c(0,0))
 dummyData = data.frame(x=c(0,0), y=c(1.1, -1.5))
 
-figS22 = ggplot(plotdata2) +
+figS23 = ggplot(plotdata2) +
   stat_binhex(bins=60,na.rm = TRUE, mapping=aes(x = x, y=y, fill = log(..count..))) + # opts(aspect.ratio = 1) +
   #facet_wrap(facets = ~  variable, scales = "free_x", labeller = labl, ncol=3) +
   geom_line(data=dfline, mapping = aes(x=x, y=y), color="black", size=1) + 
@@ -82,12 +82,12 @@ figS22 = ggplot(plotdata2) +
         #legend.position= "none",
         strip.background = element_blank())
 
-figS22 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
+figS23 # for some reason this plot sometimes fail and show an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(
-  paste0(figure_path, "FigS22.png"),
-  plot = figS22, device = "png",
+  paste0(figure_path, "FigS23.png"),
+  plot = figS23, device = "png",
   width = 3, height = 4, dpi = 300)
 
 

@@ -71,7 +71,6 @@ m1 = inner_join(fromStats, pred100From10, by="gene")
 m2 = inner_join(m1, predPool, by="gene")
 
 #move sampling noise to a supporting figure
-#m3 = inner_join(m2, PBMC_V3_3_ds10_20Times, by="gene")
 
 ldata = m2
 
