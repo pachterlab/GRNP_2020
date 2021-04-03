@@ -9,7 +9,6 @@
 source(paste0(sourcePath,"ButterflyHelpers.R"))
 source(paste0(sourcePath,"CCCHelpers.R"))
 source(paste0(sourcePath,"preseqHelpers.R"))
-sourcePath2 = "C:/Work/R/ButterflyPublicationRepo/GRNP_2020/RCode/"
 source(paste0(sourcePath,"ggplotHelpers.R"))
 
 
@@ -21,6 +20,7 @@ library(textTinyR)
 library(qdapTools)
 library("matrixStats")
 library(Matrix.utils)
+library(Seurat)
 
 colors = gg_color_hue(2)
 
@@ -47,7 +47,6 @@ gn10x = aggregate.Matrix(gn10x, outGenes, fun='sum')
 
 set.seed(1)
 
-library(Seurat)
 
 #run through Seurat
 d = CreateSeuratObject(counts = gn10x, project = "10x", min.cells = 0, min.features = 0)

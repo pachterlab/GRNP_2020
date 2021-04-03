@@ -50,7 +50,6 @@ fromStats = tibble(gene = statsPBMC_V3_3$gene,
                    nopred = statsPBMC_V3_3$CPM_PBMC_V3_3_d_10)
 
 #prediction
-#pred100From10 = upSampleAndGetMeanExprPreSeq(dsBug, t=10, mt=2)
 pred100From10 = upSampleAndGetMeanExprPreSeqZTNB(dsBug, t=10)
 
 colnames(pred100From10) = c("gene", "pred")
@@ -80,7 +79,6 @@ ldata2 = m3
 
 
 #cpm and log transform
-#for (i in 2:7) {
 for (i in 2:6) {
   ldata[, i] = log2(ldata[, i]*10^6/sum(ldata[, i]) + 1)
 }
