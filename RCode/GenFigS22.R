@@ -24,7 +24,7 @@ numGenes = 500
 logDepths = (-5):5
 logMus = seq(-7,3,by=1)
 lfcs = seq(0.5,3,by=0.5)
-logGexs = 3:13
+logGexs = 2:13
 
 
 #install.packages("pROC")
@@ -67,7 +67,7 @@ print(pA)
 
 ns = length(depthData$de)
 
-x=log2(depths[1:ns])
+x=logDepths
 y1=rep(NA,ns)
 y2=rep(NA,ns)
 
@@ -125,7 +125,7 @@ print(pC)
 
 ns = length(gexData$de)
 
-x=log2(gexs[1:ns])
+x=logGexs
 y1=rep(NA,ns)
 y2=rep(NA,ns)
 
