@@ -9,13 +9,7 @@
 #source("GRNP_2020/RCode/pathsGoogleColab.R")
 
 source(paste0(sourcePath,"ButterflyHelpers.R"))
-source(paste0(sourcePath,"ggplotHelpers.R"))
 source(paste0(sourcePath,"preseqHelpers.R"))
-
-library(ggplot2)
-library(ggpubr)
-#library(DESeq2")
-library(Seurat)
 
 
 #normal values, when not varying the other factors
