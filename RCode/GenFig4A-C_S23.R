@@ -3,6 +3,8 @@
 #source("C:/Work/MatlabCode/projects/HMASandbox/HMA_Sandbox/Butterfly/paths.R")
 #or, in colab:
 #source("GRNP_2020/RCode/pathsGoogleColab.R")
+#or,
+#source("C:/Work/R/ButterflyPublicationRepo/GRNP_2020/RCode/pathsPublRepo.R")
 
 source(paste0(sourcePath, "CCCHelpers.R"))
 
@@ -82,7 +84,7 @@ figS23 = ggplot(plotdata2) +
         #legend.position= "none",
         strip.background = element_blank())
 
-figS23 # for some reason this plot sometimes fails and show an error ("hbin" ...) - Restart R and try again in that case
+figS23 # for some reason this plot sometimes fails and shows an error ("hbin" ...) - Restart R and try again in that case
 
 
 ggsave(
@@ -99,6 +101,13 @@ print(paste0("CCC, no pred: ", getCCC(ldata$nopred, ldata$trueval))) #0.98127529
 print(paste0("CCC, pred no pooling: ", getCCC(ldata$pred, ldata$trueval))) #0.993829998877551
 print(paste0("CCC, pred with pooling: ", getCCC(ldata$poolpred, ldata$trueval))) #0.997028015743896
 print(paste0("CCC, no pred, ds 100 times vs ds: ", getCCC(ldata2$nopred, ldata2$sampling))) #0.99890437562339
+
+#also get mean squared error
+print(paste0("MSE, no pred: ", getMSE(ldata$nopred, ldata$trueval))) #0.192957136231134
+print(paste0("MSE, pred no pooling: ", getMSE(ldata$pred, ldata$trueval))) #0.0624471167682468
+print(paste0("MSE, pred with pooling: ", getMSE(ldata$poolpred, ldata$trueval))) #0.0299541970779269
+print(paste0("MSE, no pred, ds 100 times vs ds: ", getMSE(ldata2$nopred, ldata2$sampling))) #0.0108884743502623
+
 
 
 

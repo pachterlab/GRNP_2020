@@ -209,6 +209,7 @@ cpmNG2l = log2(cpmNG2 + 1)
 cpmNGl = log2(cpmNG + 1)
 
 getCCC(cpmNG2l, cpmNGl) # 0.9943015
+getMSE(cpmNG2l, cpmNGl) # 0.06587565
 
 #compare to original
 mergedmat2 = merge(NGMat, NG_2mod, row.names(NGMat),row.names(NG_2mod), all.x = F, all.y = F)
@@ -225,6 +226,8 @@ cpmNG2__2l = log2(cpmNG2__2 + 1)
 cpmNG__2l = log2(cpmNG__2 + 1)
 
 getCCC(cpmNG2__2l, cpmNG__2l) # 0.9913019
+getMSE(cpmNG2__2l, cpmNG__2l) # 0.1006082
+
 
 mergedmatFilt2 = mergedmatX[,cellFilter]
 mergedmatsub = mergedmatFilt2[,subsel]
